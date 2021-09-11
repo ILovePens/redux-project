@@ -3,11 +3,14 @@ import {
 	combineReducers,
 	getDefaultMiddleware
 } from '@reduxjs/toolkit';
+// import { connectRouter, routerMiddleware } from "connected-react-router";
+
 import navReducer from '../features/nav/navSlice';
 import counterReducer from '../features/counter/counterSlice';
 import tictactoeReducer from '../features/tictactoe/tictactoeSlice';
 import connectXReducer from '../features/connectX/connectXSlice';
 
+import history from '../history';
 // export const store = configureStore({
 //   reducer: {
 //     counter: counterReducer,
@@ -21,6 +24,15 @@ const combinedReducer = combineReducers({
   tictactoe: tictactoeReducer,
   connectX: connectXReducer,
 });
+
+// const rootReducer = (history: history) => ({
+//     router: connectRouter(history)
+// })
+
+// export default configureStore({
+//   reducer: rootReducer(history),
+//   middleware: [routerMiddleware(history), ...getDefaultMiddleware()]
+// });
 
 const rootReducer = (state, action) => {
 // Reducers are supposed to return the initial state when they are called
