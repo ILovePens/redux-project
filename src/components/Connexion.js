@@ -1,12 +1,11 @@
 import React from 'react';
 import history from '../history';
 class Connexion extends React.Component {
-
 	goToChat = event => {
 		event.preventDefault();
 		console.log(this);
 		const pseudo = this.pseudoInput.value;
-		history.push(`/pseudo/${pseudo}`);
+		history.push(`/redux-project/pseudo/${pseudo}`);
 	};
 
 	render() {
