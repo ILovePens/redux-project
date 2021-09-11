@@ -15,14 +15,15 @@ import store from './app/store';
 import { Provider } from 'react-redux';
 // import * as serviceWorker from './serviceWorker';
 
+const baseURL = "/redux-project";
 
 ReactDOM.render(
   <React.StrictMode>
     <Provider store={store}>
-			<Router history={history} basename="/redux-project/">
+			<Router history={history}>
 				<Switch>
-					<Route exact path='/' component={Connexion} />
-					<Route path="/pseudo/:pseudo"  component={App} /> 
+					<Route exact path={`${baseURL}/`} component={Connexion} />
+					<Route path={`${baseURL}/pseudo/:pseudo`}  component={App} /> 
 					<Route component={NotFound}/>
 				</Switch>
 			</Router>
