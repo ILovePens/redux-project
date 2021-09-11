@@ -4,18 +4,24 @@ import './index.css';
 // Rooter
 import {Router, Route, Switch} from 'react-router-dom';
 import history from './history';
-import { ConnectedRouter } from "connected-react-router";
 
 //Components
 import Connexion from './components/Connexion'
 import App from './App';
 import NotFound from './components/NotFound'
+import { loadState, saveState} from './localStorage'
 
 import store from './app/store';
 import { Provider } from 'react-redux';
 // import * as serviceWorker from './serviceWorker';
 
 const baseURL = "/redux-project";
+
+const persistedState = loadState();
+
+store.subscribe(() => {
+	saveState(store.getState());
+})
 
 ReactDOM.render(
   <React.StrictMode>

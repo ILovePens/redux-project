@@ -7,6 +7,7 @@ import {
   toggleGravity,
   flipBoard,
   sendGameSettings,
+  syncBase,
   reset,
 
   selectTransitions,
@@ -18,8 +19,8 @@ import {
 } from './connectXSlice';
 import Board from './components/Board';
 import Form from './components/Form';
-import {Switch, Reset} from '../general/helpers/Components';
-import {calculateWinner} from '../general/helpers/Functions';
+import { Switch, Reset } from '../general/helpers/Components';
+import { calculateWinner } from '../general/helpers/Functions';
 // CSS
 import styles from './ConnectX.module.css';
 
@@ -28,7 +29,7 @@ export function ConnectX() {
 
   const history = useSelector(selectHistory);
   const stepNumber = useSelector(selectStepNumber);
-  let currentSlots = history[stepNumber].slots;
+  const currentSlots = history[stepNumber].slots;
 
   const gameSettings = useSelector(selectGameSettings);
   const boardFlip = history[stepNumber].boardFlip;
@@ -39,13 +40,13 @@ export function ConnectX() {
 
   let transitions = useSelector(selectTransitions);
   transitions = Object.keys(transitions).length === 0 ? null : transitions;
-  console.log(transitions);
+  // console.log(transitions);
   let winIndexes = [];
   const scoreTarget = gameSettings.scoreTarget;
   if (stepNumber >= (scoreTarget * 2 - 1)) {
     const boardWidth = boardFlip % 2 === 0 ? boardParams.width : boardParams.height;
     winIndexes = calculateWinner((history[stepNumber - 1]).slots, currentSlots, scoreTarget, boardWidth);
-  console.log("winIndexes",winIndexes);
+  // console.log("winIndexes",winIndexes);
   }
   // We create the move list to be displayed from the history
   let moves = history.map((step, move) => {
@@ -107,6 +108,7 @@ export function ConnectX() {
         flip={boardFlip}
         winIndexes={winIndexes}
         onClick={(i) => dispatch(handleClick(i))}
+        syncBase={(i) => dispatch(syncBase(i))}
       />
       <div className={styles.game_info}>
         <div className={styles.status}>{status}</div>

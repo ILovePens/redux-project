@@ -22,6 +22,20 @@ export const connectXSlice = createSlice({
   initialState,
   // The `reducers` field lets us define reducers and generate associated actions
   reducers: {
+    syncBase: (state, action) => {
+      const base = action.payload;
+
+      // base.syncState('/history', {
+      //   context: this,
+      //   state: 'history'
+      // });
+
+      // base.syncState('/', {
+      //   context: this,
+      //   state: 'history'
+      // });      
+    },
+
     handleClick: (state, action) => {
       // We ensure the erasure of any "future" steps if the game is resumed from a history move
       const stepNumber = state.stepNumber;
@@ -214,7 +228,7 @@ export const connectXSlice = createSlice({
   },
 });
 
-export const { handleClick, changeStep, toggleSort, toggleGravity, flipBoardState, setGameSettings, reset} = connectXSlice.actions;
+export const { handleClick, changeStep, toggleSort, toggleGravity, flipBoardState, setGameSettings, syncBase, reset} = connectXSlice.actions;
 
 // The function below is called a selector and allows us to select a value from
 // the state. Selectors can also be defined inline where they're used instead of

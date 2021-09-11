@@ -1,10 +1,17 @@
 import React from 'react';
 import Slot from './Slot';
+import base from '../base';
+
+// STYLE
 import { animateBoards, styleWin } from '../ConnectXTransitions.js';
-// CSS
 import styles from '../ConnectX.module.css';
 
 class Board extends React.Component {
+  componentDidMount() {
+    if(this.props.isMainBoard) {
+      this.props.syncBase(base);
+    }
+  }
 
   // ANIMATION & WIN TRIGGER //
   componentDidUpdate() {
