@@ -1,5 +1,6 @@
 {
   "name": "redux-app",
+  "homepage": "https://ilovepens.github.io/redux-project/",  
   "version": "0.1.0",
   "private": true,
   "dependencies": {
