@@ -43,7 +43,11 @@ const rootReducer = (state, action) => {
   return combinedReducer(state, action);
 };
 
+const customizedMiddleware = getDefaultMiddleware({
+  serializableCheck: false
+});
+
 export default configureStore({
   reducer: rootReducer,
-  middleware: [...getDefaultMiddleware()]
+  middleware: [...customizedMiddleware]
 });

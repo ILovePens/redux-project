@@ -1,7 +1,9 @@
 import React from 'react';
 import Slot from './Slot';
-import base from '../base';
+import base from '../../../base';
+import { getDatabase } from "firebase/database";
 
+// const database = getDatabase();
 // STYLE
 import { animateBoards, styleWin } from '../ConnectXTransitions.js';
 import styles from '../ConnectX.module.css';
@@ -9,7 +11,6 @@ import styles from '../ConnectX.module.css';
 class Board extends React.Component {
   componentDidMount() {
     if(this.props.isMainBoard) {
-      this.props.syncBase(base);
     }
   }
 
@@ -18,6 +19,7 @@ class Board extends React.Component {
     // We use this hook to manipulate the transitions on the dom elements 
     const transitions = this.props.transitions;
     if(this.props.isMainBoard) {
+    // this.props.syncBase();
     console.log('main upadte')
       // If transitions are present, we play them
       if (transitions && (transitions.slots || transitions.board)) {

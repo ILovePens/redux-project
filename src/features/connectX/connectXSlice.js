@@ -1,4 +1,7 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import { getDatabase, ref, set, get} from "firebase/database";
+// import base from '../../base';
+
 // import { fetchCount } from './connectXAPI';
 
 const initialState = {
@@ -22,18 +25,44 @@ export const connectXSlice = createSlice({
   initialState,
   // The `reducers` field lets us define reducers and generate associated actions
   reducers: {
-    syncBase: (state, action) => {
-      const base = action.payload;
+    // Write syncState by hand with
+    // Check for differences bewtween the state and the db, if there are, update the state with the db values
+    // One function for initializing all the states, and one other, that watches history value for the two players mode
+    writeData: (state, action) => {
+      // const base = action.payload;
 
-      // base.syncState('/history', {
-      //   context: this,
-      //   state: 'history'
+      // console.log("set history",state.history);
+      // const rootRef = ref(getDatabase(), '/');
+      // let dbHistory;
+      // get(rootRef).then((snapshot) => {
+      //   if (snapshot.exists()) {
+      //     dbHistory = snapshot.val();
+      //   } else {
+      //     console.log("No data available");
+      //   }
+      // }).catch((error) => {
+      //   console.error(error);
+      // });
+
+      // set(rootRef, {
+      //   history: state.history
       // });
 
       // base.syncState('/', {
       //   context: this,
       //   state: 'history'
       // });      
+    },
+    loadData: (state) => {
+      // const base = action.payload;
+      console.log("loadData");
+      // Check for differences between our local states and the database, update our states if there is
+      // ===> all actions that modifies the game state for both players set a particular state (will serve as an indicator)
+      // to false for the player initiating the changes, but true for the database
+      // We will only watch this indicator state with onValue to call for an update of the state on the other
+      // player computer
+    // ======> the indicator state will be stepNumber, its a perfect reference for the watch value
+    // It'll go along with the new next player determination system, which is that every action count 
     },
 
     handleClick: (state, action) => {
@@ -90,9 +119,19 @@ export const connectXSlice = createSlice({
       // Or we simply put in the value if it hasn't already
       if(!slots[slotIndex]) slots[slotIndex] = (state.stepNumber % 2) === 0 ?  'X' : 'O';
 
+
       // We add the current board to the history, and assign the stepNumber based on the new history
       state.history = history.concat([{slots: slots, boardFlip: current.boardFlip}]);
       state.stepNumber = history.length;    
+      console.log("set history", state.history);
+      let baseRef = ref(getDatabase(), '/history/');
+      set(baseRef, {
+        history: state.history
+      });      
+      baseRef = ref(getDatabase(), '/stepNumber/');
+      set(baseRef, {
+        stepNumber: state.stepNumber
+      });
       state.transitions = {slots: transitions, board: null};
     },
 
@@ -228,7 +267,7 @@ export const connectXSlice = createSlice({
   },
 });
 
-export const { handleClick, changeStep, toggleSort, toggleGravity, flipBoardState, setGameSettings, syncBase, reset} = connectXSlice.actions;
+export const { handleClick, changeStep, toggleSort, toggleGravity, flipBoardState, setGameSettings, syncBase, loadData, reset} = connectXSlice.actions;
 
 // The function below is called a selector and allows us to select a value from
 // the state. Selectors can also be defined inline where they're used instead of
@@ -251,6 +290,9 @@ export const jumpTo = (stepNumber) => (dispatch, getState) => {
 
 export const flipBoard = (direction) => (dispatch, getState) => {
   dispatch(flipBoardState(direction));
+  // const db = getDatabase();
+  // const historyRef = ref(db, '/history');
+  // historyRef.off();
   // When browsing the steps via the history, we want the game to get up to date if gravity is enabled,
   // thus replacing the move we went to
   if(selectGravityState(getState())) {

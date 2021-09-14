@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import {
   handleClick,
@@ -8,6 +8,7 @@ import {
   flipBoard,
   sendGameSettings,
   syncBase,
+  loadData,
   reset,
 
   selectTransitions,
@@ -24,12 +25,36 @@ import { calculateWinner } from '../general/helpers/Functions';
 // CSS
 import styles from './ConnectX.module.css';
 
+// DATABASE
+import { getDatabase, ref, onValue} from "firebase/database";
+import "firebase/database";
+
 export function ConnectX() {
   const dispatch = useDispatch();
 
   const history = useSelector(selectHistory);
   const stepNumber = useSelector(selectStepNumber);
   const currentSlots = history[stepNumber].slots;
+
+  const db = getDatabase();
+  const historyRef = ref(db, `/stepNumber`);
+  useEffect(() => {
+    // const onValueChange = ref(getDatabase(), '/history').once('value').then(snapshot  => {
+    //   const data = snapshot.val();
+    //   dispatch(loadData()(data));
+    // });
+    console.log('in connectX');
+    onValue(historyRef, (snapshot) => {
+      var data = snapshot.val();
+      console.log("snapshot",data);
+      dispatch(loadData());
+    }, {
+      onlyOnce: true
+    });
+    // Stop listening for updates when no longer required
+    // return () => dispatch(loadData()(historyRef));;
+  });
+
 
   const gameSettings = useSelector(selectGameSettings);
   const boardFlip = history[stepNumber].boardFlip;
