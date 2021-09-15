@@ -1,8 +1,8 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import { getDatabase, ref, set, get} from "firebase/database";
-// import base from '../../base';
+// import { getDatabase, ref, set } from "firebase/database";
+import base from '../../base';
 
-// import { fetchCount } from './connectXAPI';
+import { readStepnumberChange } from './connectXAPI';
 
 const initialState = {
   history: [{
@@ -20,6 +20,16 @@ const initialState = {
   transitions: {},
 };
 
+export const updateGameAsync = createAsyncThunk(
+  'connectX/readStepnumberChange',
+  async () => {
+    const response = await readStepnumberChange();
+    console.log("response",response);
+    // The value we return becomes the `fulfilled` action payload
+    return response.stepNumber;
+  }
+);
+
 export const connectXSlice = createSlice({
   name: 'connectX',
   initialState,
@@ -28,7 +38,7 @@ export const connectXSlice = createSlice({
     // Write syncState by hand with
     // Check for differences bewtween the state and the db, if there are, update the state with the db values
     // One function for initializing all the states, and one other, that watches history value for the two players mode
-    writeData: (state, action) => {
+    syncBase: (state, action) => {
       // const base = action.payload;
 
       // console.log("set history",state.history);
@@ -48,14 +58,27 @@ export const connectXSlice = createSlice({
       //   history: state.history
       // });
 
+      console.log("syncBase", action.payload);
+      // const base = action.payload;
       // base.syncState('/', {
       //   context: this,
       //   state: 'history'
       // });      
     },
-    loadData: (state) => {
+    loadData: (state, action) => {
       // const base = action.payload;
+      // const stepNumber = action.payload;
+      // let watchedStepNumber;
+      // base.ref(`/stepNumber`).off('value');      
       console.log("loadData");
+      //   console.log("stepNumber",state.stepNumber);
+      // base.ref(`/stepNumber`).on('value', snapshot => {
+      //   console.log("payload",action.payload);
+      //   // watchedStepNumber = snapshot.val();
+      //   console.log("in loadData", snapshot.val());
+      //   // state.stepNumber = watchedStepNumber.stepNumber;
+      // });
+
       // Check for differences between our local states and the database, update our states if there is
       // ===> all actions that modifies the game state for both players set a particular state (will serve as an indicator)
       // to false for the player initiating the changes, but true for the database
@@ -124,14 +147,23 @@ export const connectXSlice = createSlice({
       state.history = history.concat([{slots: slots, boardFlip: current.boardFlip}]);
       state.stepNumber = history.length;    
       console.log("set history", state.history);
-      let baseRef = ref(getDatabase(), '/history/');
-      set(baseRef, {
+      // let baseRef = ref(getDatabase(), '/history/');
+      // set(baseRef, {
+      //   history: state.history
+      // });      
+      // baseRef = ref(getDatabase(), '/stepNumber/');
+      // set(baseRef, {
+      //   stepNumber: state.stepNumber
+      // });
+
+      base.ref('/history/').set({
         history: state.history
-      });      
-      baseRef = ref(getDatabase(), '/stepNumber/');
-      set(baseRef, {
+      });
+
+      base.ref('/stepNumber/').set({
         stepNumber: state.stepNumber
       });
+
       state.transitions = {slots: transitions, board: null};
     },
 
@@ -265,6 +297,18 @@ export const connectXSlice = createSlice({
       state.gravIsOn = false;
     }
   },
+  extraReducers: (builder) => {
+    builder
+      .addCase(updateGameAsync.pending, (state) => {
+        // state.status = 'loading';
+        console.log("pending");
+      })
+      .addCase(updateGameAsync.fulfilled, (state, action) => {
+        // state.status = 'idle';
+        console.log("fulfilled", action.payload);
+        if(action.payload !== state.stepNumber) state.stepNumber = action.payload;
+      });
+  }  
 });
 
 export const { handleClick, changeStep, toggleSort, toggleGravity, flipBoardState, setGameSettings, syncBase, loadData, reset} = connectXSlice.actions;
@@ -305,4 +349,30 @@ export const sendGameSettings = (settings) => (dispatch) => {
   dispatch(setGameSettings(settings));
 };
 
+// USE SETINTERVAL USING ASYNCTHUNK AND EXTRA REDUCERS
+
+export const startWatchingStepNumber = () => dispatch => {
+  const watchTimer = setInterval(() => {
+    dispatch(updateGameAsync());
+  }, 4000);
+  // dispatch({ type: START_WATCHING_STEPNUMBER, payload: watchTimer });
+};
+
+// export const fetchLobby = () => async dispatch => {
+//   const response = await tortuga.get('/lobby/my-lobby');
+//   const data = response.data;
+//   dispatch({ type: FETCH_LOBBY, payload: data });
+// };
+
+
+// const dbRef = firebase.database().ref();
+// dbRef.child("users").child(userId).get().then((snapshot) => {
+//   if (snapshot.exists()) {
+//     console.log(snapshot.val());
+//   } else {
+//     console.log("No data available");
+//   }
+// }).catch((error) => {
+//   console.error(error);
+// });
 export default connectXSlice.reducer;

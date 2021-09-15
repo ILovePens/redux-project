@@ -1,8 +1,8 @@
 // import Rebase from 're-base';
 
-import firebase from 'firebase/app';
-import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, getDocs } from 'firebase/firestore/lite';
+// import firebase from 'firebase/app';
+// import { initializeApp } from 'firebase/app';
+// import { getFirestore, collection, getDocs } from 'firebase/firestore/lite';
 
 // const database = getDatabase();
 // import 'firebase/database';
@@ -12,7 +12,13 @@ import { getFirestore, collection, getDocs } from 'firebase/firestore/lite';
 // If it's on, goToStep and sendGamesettings are unavailable until the game ends
 // All controls are diasbled when it's not your turn or if a game is happening
 
-const firebaseConfig = {
+
+// import Rebase from 're-base';
+import firebase from 'firebase/app';
+
+import 'firebase/database';
+
+var app = firebase.initializeApp({
   apiKey: "AIzaSyDVe3axD8Y3GnxcnsnDuDz_FHCKYJcu6gg",
   authDomain: "redux-project-98a9a.firebaseapp.com",
   databaseURL: "https://redux-project-98a9a-default-rtdb.europe-west1.firebasedatabase.app/",
@@ -21,11 +27,8 @@ const firebaseConfig = {
   messagingSenderId: "67646127878",
   appId: "1:67646127878:web:507ecc4c86993503ca2887",
   measurementId: "G-34QJSE84ZR"
-};
-
-const app = initializeApp(firebaseConfig);
-const base = getFirestore(app);
-
-// var base = Rebase.createClass(db);
+});
+// var base = Rebase.createClass(app.database());
+var base = app.database();
 
 export default base;

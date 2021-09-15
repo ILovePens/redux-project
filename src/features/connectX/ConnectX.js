@@ -9,6 +9,7 @@ import {
   sendGameSettings,
   syncBase,
   loadData,
+  startWatchingStepNumber,
   reset,
 
   selectTransitions,
@@ -26,8 +27,9 @@ import { calculateWinner } from '../general/helpers/Functions';
 import styles from './ConnectX.module.css';
 
 // DATABASE
-import { getDatabase, ref, onValue} from "firebase/database";
-import "firebase/database";
+// import base from '../../base';
+// import { getDatabase, ref, onValue} from "firebase/database";
+// import "firebase/database";
 
 export function ConnectX() {
   const dispatch = useDispatch();
@@ -36,25 +38,39 @@ export function ConnectX() {
   const stepNumber = useSelector(selectStepNumber);
   const currentSlots = history[stepNumber].slots;
 
-  const db = getDatabase();
-  const historyRef = ref(db, `/stepNumber`);
-  useEffect(() => {
-    // const onValueChange = ref(getDatabase(), '/history').once('value').then(snapshot  => {
-    //   const data = snapshot.val();
-    //   dispatch(loadData()(data));
-    // });
-    console.log('in connectX');
-    onValue(historyRef, (snapshot) => {
-      var data = snapshot.val();
-      console.log("snapshot",data);
-      dispatch(loadData());
-    }, {
-      onlyOnce: true
-    });
-    // Stop listening for updates when no longer required
-    // return () => dispatch(loadData()(historyRef));;
-  });
+  // const db = getDatabase();
+  // const historyRef = ref(db, `/stepNumber`);
+  // useEffect(() => {
+  //   const onValueChange = ref(getDatabase(), '/history').once('value').then(snapshot  => {
+  //     const data = snapshot.val();
+  //     dispatch(loadData()(data));
+  //   });
+  //   console.log('in connectX');
+  //   onValue(historyRef, (snapshot) => {
+  //     var data = snapshot.val();
+  //     console.log("snapshot",data);
+  //     dispatch(loadData());
+  //   }, {
+  //     onlyOnce: true
+  //   });
+  //   // Stop listening for updates when no longer required
+  //   return () => dispatch(loadData()(historyRef));;
+  // });
+  // useEffect(() => {
+  //   // let hasChanged
+  //   console.log("stepNumber",stepNumber);
+  //   base.ref(`/stepNumber`)
+  //     .once('value')
+  //     .then(function(dataSnapshot) {
+  //       var data = dataSnapshot.val();
+  //       console.log("snapshot",data);
+  //       // base.ref(`/stepNumber`).off();
+  //       dispatch(loadData(data));
+  //     });
 
+  //   // Stop listening for updates when no longer required
+  //   // return () => base.ref(`/stepNumber`).off('value', onValueChange);
+  // }, [useSelector(selectStepNumber)]);
 
   const gameSettings = useSelector(selectGameSettings);
   const boardFlip = history[stepNumber].boardFlip;
@@ -133,7 +149,7 @@ export function ConnectX() {
         flip={boardFlip}
         winIndexes={winIndexes}
         onClick={(i) => dispatch(handleClick(i))}
-        syncBase={(i) => dispatch(syncBase(i))}
+        loadData={(i) => dispatch(startWatchingStepNumber(i))}
       />
       <div className={styles.game_info}>
         <div className={styles.status}>{status}</div>

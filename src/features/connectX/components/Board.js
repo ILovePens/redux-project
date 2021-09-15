@@ -1,7 +1,7 @@
 import React from 'react';
 import Slot from './Slot';
 import base from '../../../base';
-import { getDatabase } from "firebase/database";
+// import { getDatabase } from "firebase/database";
 
 // const database = getDatabase();
 // STYLE
@@ -19,7 +19,17 @@ class Board extends React.Component {
     // We use this hook to manipulate the transitions on the dom elements 
     const transitions = this.props.transitions;
     if(this.props.isMainBoard) {
-    // this.props.syncBase();
+    this.props.loadData();
+    // setTimeout(() => { 
+    //   base.ref(`/stepNumber`)
+    //     .once('value')
+    //     .then(function(dataSnapshot) {
+    //       var data = dataSnapshot.val();
+    //       console.log("snapshot",data);
+    //       // base.ref(`/stepNumber`).off();
+    //       loadData(data);
+    //     });        
+    // }, 500);
     console.log('main upadte')
       // If transitions are present, we play them
       if (transitions && (transitions.slots || transitions.board)) {
