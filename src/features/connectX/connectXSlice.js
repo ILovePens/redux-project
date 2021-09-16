@@ -1,8 +1,8 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import { getDatabase, ref, set, get} from "firebase/database";
+import { getDatabase, ref, set, push, get, remove} from "firebase/database";
 // import base from '../../base';
 
-// import { fetchCount } from './connectXAPI';
+import { readStepnumber,  readPlayers} from './connectXAPI';
 
 const initialState = {
   history: [{
@@ -18,7 +18,27 @@ const initialState = {
   sortIsAsc: true,
   gravIsOn: false,
   transitions: {},
+  players: []
 };
+
+export const updateGameAsync = createAsyncThunk(
+  'connectX/readStepnumber',
+  async () => {
+    const response = await readStepnumber();
+    console.log("response",response);
+    // The value we return becomes the `fulfilled` action payload
+    return response.stepNumber;
+  }
+);
+
+export const requestGameAsync = createAsyncThunk(
+  'connectX/readPlayers',
+  async () => {
+    const response = await readPlayers();
+    // The value we return becomes the `fulfilled` action payload
+    return response;
+  }
+);
 
 export const connectXSlice = createSlice({
   name: 'connectX',
@@ -258,6 +278,9 @@ export const connectXSlice = createSlice({
     },
 
     reset: (state) => {
+      if( state.players.length !== 0 ) {
+        remove(ref(getDatabase(), '/players/'));
+      }
       state.history = state.history.slice(0,1);
       state.stepNumber = 0;
       state.transitions = {};
@@ -265,6 +288,33 @@ export const connectXSlice = createSlice({
       state.gravIsOn = false;
     }
   },
+  extraReducers: (builder) => {
+    builder
+      .addCase(updateGameAsync.pending, (state) => {
+        // state.status = 'loading';
+        console.log("pending");
+      })
+      .addCase(updateGameAsync.fulfilled, (state, action) => {
+        // state.status = 'idle';
+        console.log("fulfilled", action.payload);
+        if(action.payload !== state.stepNumber) state.stepNumber = action.payload;
+      })
+      .addCase(requestGameAsync.fulfilled, (state, action) => {
+        // state.status = 'idle';
+        const players = action.payload;
+        const playersRefs = Object.keys(players);
+        // response = Array.from(response);
+        // console.log("response",response);
+        // console.log("response",response);        
+        // console.log("fulfilled", Object.keys(action.payload));
+        console.log("fulfilled", Object.keys(players));
+        // console.log("fulfilled", [...action.payload]);
+        if(playersRefs.length >= 2) {
+          state.players = [players[playersRefs[0]],players[playersRefs[1]]];
+          state.twoPlayersMode = true;
+        }
+      });
+  }  
 });
 
 export const { handleClick, changeStep, toggleSort, toggleGravity, flipBoardState, setGameSettings, syncBase, loadData, reset} = connectXSlice.actions;
@@ -278,6 +328,7 @@ export const selectStepNumber = (state) => state.connectX.stepNumber;
 export const selectSortIsAsc = (state) => state.connectX.sortIsAsc;
 export const selectGravityState = (state) => state.connectX.gravIsOn;
 export const selectTransitions = (state) => state.connectX.transitions;
+export const selectPlayers = (state) => state.connectX.players;
 
 export const jumpTo = (stepNumber) => (dispatch, getState) => {
   dispatch(changeStep(stepNumber));
@@ -304,5 +355,31 @@ export const sendGameSettings = (settings) => (dispatch) => {
   dispatch(reset());
   dispatch(setGameSettings(settings));
 };
+
+export const requestGame = (pseudo) => (dispatch, getState) => {
+  // Prevent double click from same player
+  // ==> find a way to "deactivate" data changing game actions during the whole two player process
+  // when it's not your turn
+  // ===> conditionnally call any reducer using selectPlayers
+  // ==> always write the player, even solo, in the db, add logic to make sure the same player isnt added twice,
+  // or that more than 2 players are added
+  console.log("requestGame",pseudo)
+  set(push(ref(getDatabase(), 'players')), {
+    pseudo
+  });
+  // const watchTimer = setInterval(() => {
+    dispatch(requestGameAsync());
+  // }, 4000);
+};
+
+export const startWatchingStepNumber = (pseudo) => (dispatch, getState) => {
+  const players = selectPlayers(getState());
+  const isInTwoPlayersMode = players.length === 2 && players.find(e => e.pseudo === pseudo);
+  if (isInTwoPlayersMode /*&& "isNotMyTurn"*/) {
+  // const watchTimer = setInterval(() => {
+    dispatch(updateGameAsync());
+  // }, 4000);
+  }
+};  
 
 export default connectXSlice.reducer;

@@ -29,7 +29,8 @@ class App extends Component {
   }
 
   render() {
-    const itemSelected = this.state.itemSelected ? React.createElement(this.state.items[this.state.itemSelected], {}) : null;    
+
+    const itemSelected = this.state.itemSelected ? React.createElement(this.state.items[this.state.itemSelected], {pseudo: this.props.match.params.pseudo}) : null;    
     return (
       <div className="App">
         <Nav items={this.state.items} handleClick={this.handleClick}/>
