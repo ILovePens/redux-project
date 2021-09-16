@@ -11,8 +11,10 @@ import {
   loadData,
   startWatchingStepNumber,
   requestGame,
+  writeData,
   reset,
 
+  selectTwoPlayersMode,
   selectPlayers,
   selectTransitions,
   selectGravityState,  
@@ -29,45 +31,43 @@ import { calculateWinner } from '../general/helpers/Functions';
 import styles from './ConnectX.module.css';
 
 // DATABASE
-import { getDatabase, ref, onValue} from "firebase/database";
+import { getDatabase, ref } from "firebase/database";
 import "firebase/database";
 
 export function ConnectX(props) {
   const dispatch = useDispatch();
-
+  dispatch(writeData());
   const history = useSelector(selectHistory);
   const stepNumber = useSelector(selectStepNumber);
+  // const stepNumber = 0;
+
   const currentSlots = history[stepNumber].slots;
-  
   const players = useSelector(selectPlayers);
+  const pseudo = props.pseudo;
+  const isPlayer = players.find(e => e.pseudo === pseudo);
   console.log(players);
-  const isTwoPlayersModeOn = players.length >= 2 ? true : false;
-  console.log(isTwoPlayersModeOn);
-  if (isTwoPlayersModeOn) {
-    // window.addEventListener("unload", function(event) { ... });
+  const gameInProgress = players.length === 2 && !isPlayer;
+  const waitingForGame = players.length === 1 && isPlayer;
+  // const inGame = players.length === 2 && isPlayer;
+  const inGame = useSelector(selectTwoPlayersMode);
+  if (waitingForGame || inGame) {
     window.onunload = function(event) {
-      dispatch(reset());
+      dispatch(reset(true));
     };
   }
-  // const db = getDatabase();
-  // const historyRef = ref(db, `/stepNumber`);
-  // useEffect(() => {
-  //   // const onValueChange = ref(getDatabase(), '/history').once('value').then(snapshot  => {
-  //   //   const data = snapshot.val();
-  //   //   dispatch(loadData()(data));
-  //   // });
-  //   console.log('in connectX');
-  //   onValue(historyRef, (snapshot) => {
-  //     var data = snapshot.val();
-  //     console.log("snapshot",data);
-  //     dispatch(loadData());
-  //   }, {
-  //     onlyOnce: true
-  //   });
-    // Stop listening for updates when no longer required
-    // return () => dispatch(loadData()(historyRef));;
-  // });
 
+  let requestGameButton;
+  // if (!isPlayer && !gameInProgress) {
+      requestGameButton = <button onClick={() => dispatch(requestGame(pseudo))}>Request game</button>
+  // }
+
+  if (waitingForGame) {
+
+  }
+
+  // if ((inGame && !isMyTurn)) {
+  // DEACTIVATE DB STATE CHANGING ACTIONS
+  // }
 
   const gameSettings = useSelector(selectGameSettings);
   const boardFlip = history[stepNumber].boardFlip;
@@ -77,7 +77,8 @@ export function ConnectX(props) {
   }
 
   let transitions = useSelector(selectTransitions);
-  transitions = Object.keys(transitions).length === 0 ? null : transitions;
+  console.log(transitions);
+  if (transitions && !transitions.board && transitions.slots.find(e => e !== 'null') === -1) transitions = null;
   // console.log(transitions);
   let winIndexes = [];
   const scoreTarget = gameSettings.scoreTarget;
@@ -114,7 +115,7 @@ export function ConnectX(props) {
 
   ////////////////////// SET better rules for the game flow and build next player detection accordingly ////////////
   // Choose which game status has to be displayed
-  const pseudo = props.pseudo;
+
   let player = (stepNumber % 2) === 0 ?  'X' : 'O';
   let status;
 
@@ -152,7 +153,7 @@ export function ConnectX(props) {
       <div className={styles.game_info}>
         <div className={styles.status}>{status}</div>
         <div className={styles.controls}>
-          <button onClick={() => dispatch(requestGame(pseudo))}>Request game</button>
+          {requestGameButton}
           <button onClick={() => dispatch(flipBoard(1))}>Flip right</button>
           <button onClick={() => dispatch(flipBoard(-1))}>Flip left</button>
           <Switch isOn={!sortIsAsc} onClick={() => dispatch(toggleSort())}/>
