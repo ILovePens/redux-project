@@ -349,6 +349,12 @@ export const connectXSlice = createSlice({
         state.transitions = {slots:transitions.slots, board:transitions.board};
         state.gravIsOn = data.gravIsOn;
       })
+      .addCase(requestGameAsync.pending, (state) => {
+        console.log("requestGameAsync pending");
+        return Object.assign({}, state, {
+          propOne: true,
+        })
+      })      
       .addCase(requestGameAsync.fulfilled, (state, action) => {
         console.log("requestGameAsync");
         // state.status = 'idle';
@@ -442,7 +448,8 @@ export const requestGame = (pseudo) => (dispatch, getState) => {
   // console.log("requestGame",pseudo)
   set(push(ref(getDatabase(), 'players')), {
     pseudo
-  });
+  })
+  dispatch(requestGameAsync());
   const watchTimer = setInterval(() => {
     if (selectTwoPlayersMode(getState())) clearInterval(watchTimer);
     dispatch(requestGameAsync());

@@ -29,7 +29,6 @@ class App extends Component {
   }
 
   render() {
-
     const itemSelected = this.state.itemSelected ? React.createElement(this.state.items[this.state.itemSelected], {pseudo: this.props.match.params.pseudo}) : null;    
     return (
       <div className="App">
