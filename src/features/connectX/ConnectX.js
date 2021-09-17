@@ -44,6 +44,7 @@ export function ConnectX(props) {
   const currentSlots = history[stepNumber].slots;
   const players = useSelector(selectPlayers);
   const inGame = useSelector(selectTwoPlayersMode);
+  console.log("inGame", inGame);
   const pseudo = props.pseudo;
   let gameSettingsForm = <Form sendGameSettings={(i) => dispatch(sendGameSettings(i))} />
   let requestGameButton = <button onClick={() => dispatch(requestGame(pseudo))}>Request game</button>
@@ -55,14 +56,17 @@ export function ConnectX(props) {
   // Look for our own pseudo in players, the first pseudo is X and starts the game
   // ==> assign the player value indicator inside the player object
   let player = (stepNumber % 2) === 0 ?  'X' : 'O';
-
+  console.log("players", players);
   if (players.length > 0) {
     const myPlayer = players.find(e => e.pseudo === pseudo);
+    console.log("myPlayer",myPlayer);
     const isPlayer = myPlayer !== -1;
-    // console.log(players);
+    console.log("isPlayer",isPlayer);
     const gameInProgress = players.length === 2 && !isPlayer;
     const waitingForGame = players.length === 1 && isPlayer;
     // const inGame = players.length === 2 && isPlayer;
+    console.log("waitingForGame", waitingForGame);
+    console.log("gameInProgress", gameInProgress);
   
     if (waitingForGame || inGame) {
       window.onunload = function(event) {

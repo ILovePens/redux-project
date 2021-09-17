@@ -364,6 +364,8 @@ export const connectXSlice = createSlice({
           state.players = [{pseudo: players[playersRefs[0]].pseudo, sign: 'O'}];
           state.transitions = {slots:0, board:0};        
         } else if (playersRefs.length >= 2) {
+          const test = players[playersRefs[0]];
+          console.log(test);
           state.players = [{pseudo: players[playersRefs[0]].pseudo, sign: 'O'},{pseudo: players[playersRefs[1]].pseudo, sign: 'X'}];
           state.twoPlayersMode = true;
 
@@ -442,6 +444,7 @@ export const requestGame = (pseudo) => (dispatch, getState) => {
     pseudo
   });
   const watchTimer = setInterval(() => {
+    if (selectTwoPlayersMode(getState())) clearInterval(watchTimer);
     dispatch(requestGameAsync());
   }, 4000);
 };
