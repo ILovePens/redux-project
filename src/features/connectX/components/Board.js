@@ -19,8 +19,8 @@ class Board extends React.Component {
     // We use this hook to manipulate the transitions on the dom elements 
     const transitions = this.props.transitions;
     if(this.props.isMainBoard) {
-    this.props.startWatchingStepNumber();
-    console.log('main upadte')
+
+    // console.log('main upadte')
       // If transitions are present, we play them
       if (transitions && (transitions.slots || transitions.board)) {
         animateBoards();
@@ -50,12 +50,12 @@ class Board extends React.Component {
     const transitions = this.props.transitions ? this.props.transitions.slots : null;
     let slotScore = 0;
     let animationCallback;
-    if(transitions && transitions[i]) {
+    if(transitions && transitions[i] !== 'null') {
       slotScore = transitions[i];
       if(isBoardWon) { // For now we only put the callback to style a win 
         // Sort out the null elements, then sort in descending order the slotScores that are left inside
         // and take out the first value, which indicates the maximum animation score for this render
-        const maxScore = transitions.filter(el => {return el != null;}).sort((a, b) => b - a)[0];
+        const maxScore = transitions.filter(el => {return el !== 'null';}).sort((a, b) => b - a)[0];
         // Finds the first index with a maxScore in the map and check if it corresponds to the current index
         const isFirstMaxScoreSlot = i === transitions.findIndex(e => e === maxScore);
         // We make this slot a reference for the longest animation and put the callback onto it

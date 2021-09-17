@@ -43,31 +43,52 @@ export function ConnectX(props) {
 
   const currentSlots = history[stepNumber].slots;
   const players = useSelector(selectPlayers);
-  const pseudo = props.pseudo;
-  const isPlayer = players.find(e => e.pseudo === pseudo);
-  console.log(players);
-  const gameInProgress = players.length === 2 && !isPlayer;
-  const waitingForGame = players.length === 1 && isPlayer;
-  // const inGame = players.length === 2 && isPlayer;
   const inGame = useSelector(selectTwoPlayersMode);
-  if (waitingForGame || inGame) {
-    window.onunload = function(event) {
-      dispatch(reset(true));
-    };
+  const pseudo = props.pseudo;
+  let gameSettingsForm = <Form sendGameSettings={(i) => dispatch(sendGameSettings(i))} />
+  let requestGameButton = <button onClick={() => dispatch(requestGame(pseudo))}>Request game</button>
+
+  let boardClickFunc = (i) => dispatch(handleClick(i));
+  let toggleGravityFunc = () => dispatch(toggleGravity(true));
+  let flipBoardR = () => dispatch(flipBoard(1));
+  let flipBoardL = () => dispatch(flipBoard(-1));
+  // Look for our own pseudo in players, the first pseudo is X and starts the game
+  // ==> assign the player value indicator inside the player object
+  let player = (stepNumber % 2) === 0 ?  'X' : 'O';
+
+  if (players.length > 0) {
+    const myPlayer = players.find(e => e.pseudo === pseudo);
+    const isPlayer = myPlayer !== -1;
+    // console.log(players);
+    const gameInProgress = players.length === 2 && !isPlayer;
+    const waitingForGame = players.length === 1 && isPlayer;
+    // const inGame = players.length === 2 && isPlayer;
+  
+    if (waitingForGame || inGame) {
+      window.onunload = function(event) {
+        dispatch(reset(true));
+      };
+      gameSettingsForm = null;
+    }
+    if (gameInProgress || isPlayer) {
+      requestGameButton = null
+    }
+
+    if (inGame) {
+      const isMyTurn = myPlayer.sign === player ? true : false;
+      if (!isMyTurn) {
+        console.log("in game update")
+        dispatch(startWatchingStepNumber());
+
+        // DEACTIVATE DB STATE CHANGING ACTIONS
+        boardClickFunc = () => {};
+        toggleGravityFunc = () => {};
+        flipBoardR = () => {};
+        flipBoardL = () => {};
+      }
+    }
   }
 
-  let requestGameButton;
-  // if (!isPlayer && !gameInProgress) {
-      requestGameButton = <button onClick={() => dispatch(requestGame(pseudo))}>Request game</button>
-  // }
-
-  if (waitingForGame) {
-
-  }
-
-  // if ((inGame && !isMyTurn)) {
-  // DEACTIVATE DB STATE CHANGING ACTIONS
-  // }
 
   const gameSettings = useSelector(selectGameSettings);
   const boardFlip = history[stepNumber].boardFlip;
@@ -77,8 +98,8 @@ export function ConnectX(props) {
   }
 
   let transitions = useSelector(selectTransitions);
-  console.log(transitions);
-  if (transitions && !transitions.board && transitions.slots.find(e => e !== 'null') === -1) transitions = null;
+  // console.log(transitions);
+  // if (transitions && !transitions.board && transitions.slots.find(e => e !== 'null') === -1) transitions = null;
   // console.log(transitions);
   let winIndexes = [];
   const scoreTarget = gameSettings.scoreTarget;
@@ -116,7 +137,7 @@ export function ConnectX(props) {
   ////////////////////// SET better rules for the game flow and build next player detection accordingly ////////////
   // Choose which game status has to be displayed
 
-  let player = (stepNumber % 2) === 0 ?  'X' : 'O';
+
   let status;
 
   if (winIndexes.length) {
@@ -138,8 +159,7 @@ export function ConnectX(props) {
   }
   return (
     <div className={styles.game}>
-      {/*PROTECT FORM INPUTS FROM VALUES TOO BIG*/}
-      <Form sendGameSettings={(i) => dispatch(sendGameSettings(i))} />
+      {gameSettingsForm/* <-- PROTECT FORM INPUTS FROM VALUES TOO BIG*/}
       <Board
         isMainBoard={true}
         boardParams={boardParams}
@@ -147,17 +167,16 @@ export function ConnectX(props) {
         transitions={transitions}
         flip={boardFlip}
         winIndexes={winIndexes}
-        onClick={(i) => dispatch(handleClick(i))}
-        startWatchingStepNumber={(i) => dispatch(startWatchingStepNumber(pseudo))}
+        onClick={(i) => boardClickFunc(i)}
       />
       <div className={styles.game_info}>
         <div className={styles.status}>{status}</div>
         <div className={styles.controls}>
           {requestGameButton}
-          <button onClick={() => dispatch(flipBoard(1))}>Flip right</button>
-          <button onClick={() => dispatch(flipBoard(-1))}>Flip left</button>
+          <button onClick={() => flipBoardR()}>Flip right</button>
+          <button onClick={() => flipBoardL()}>Flip left</button>
           <Switch isOn={!sortIsAsc} onClick={() => dispatch(toggleSort())}/>
-          <Switch isOn={useSelector(selectGravityState)} onClick={() => dispatch(toggleGravity(true))}/>
+          <Switch isOn={useSelector(selectGravityState)} onClick={() => toggleGravityFunc()}/>
           <Reset title="Reset" onClick={() => dispatch(reset())}/>
         </div>
       {/*Restructure the scroll box so it expands as the moves come in, but make it scrollable so it slides under the main div

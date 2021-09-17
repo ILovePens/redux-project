@@ -17,7 +17,7 @@ const initialState = {
   },
   sortIsAsc: true,
   gravIsOn: false,
-  transitions: null,
+  transitions: {slots:0, board:0},
   twoPlayersMode: false,
   players: [],
 };
@@ -113,7 +113,7 @@ export const connectXSlice = createSlice({
               height = state.gameSettings.width;
         }
 
-        var transitions = Array(width * height).fill(null);
+        var transitions = Array(width * height).fill(0);
 
         let slotScore = 0;
         // We start iterating at the second to last row
@@ -130,6 +130,7 @@ export const connectXSlice = createSlice({
           // We iterate on the column the slot sits in and try to push it down, decreasing the score each time it fails
           for (let i = slotIndex + slotScore * width; i > slotIndex; i -= width) {
             if(slots[i] === 'null') {
+              console.log()
               slotIndex = i;
               break;
             }
@@ -148,13 +149,11 @@ export const connectXSlice = createSlice({
       // Or we simply put in the value if it hasn't already
       if(slots[slotIndex] === 'null') slots[slotIndex] = (state.stepNumber % 2) === 0 ?  'X' : 'O';
 
-      const players = state.players;
       // We add the current board to the history, and assign the stepNumber based on the new history
       state.history = history.concat([{slots: slots, boardFlip: current.boardFlip}]);
       state.stepNumber = history.length;
-      transitions = transitions ? {slots: transitions, board: null} : null;
-      state.transitions = transitions;
-      // if (state.twoPlayersMode) {
+      state.transitions = transitions && transitions.find(e => e !== 0) !== -1 ? {slots: transitions, board: 0} : {slots:0, board:0};;
+      if (state.twoPlayersMode) {
         console.log("set db handleClick");
         const db = getDatabase();
         let baseRef = ref(db, '/history/');
@@ -163,17 +162,17 @@ export const connectXSlice = createSlice({
         set(baseRef, state.stepNumber);
         baseRef = ref(db, '/transitions/');
         set(baseRef, state.transitions);
-      // } 
+      } 
     },
 
     changeStep: (state, action) => {
       state.stepNumber = action.payload;
-      state.transitions = null;
+      state.transitions = {slots:0, board:0};
     },
 
     toggleSort: (state) => {
       state.sortIsAsc = state.sortIsAsc ? false : true;
-      state.transitions = null;
+      state.transitions = {slots:0, board:0};
     },
 
     toggleGravity: (state, action) => {
@@ -197,7 +196,7 @@ export const connectXSlice = createSlice({
 
         let width = state.gameSettings.width;
         const height = state.gameSettings.height;
-        let transitions = Array(width * height).fill(null);
+        let transitions = Array(width * height).fill(0);
 
         if (current.boardFlip % 2 !== 0) width = height;
 
@@ -232,23 +231,21 @@ export const connectXSlice = createSlice({
           state.history = history.concat([{slots: slots, boardFlip: current.boardFlip}]);
           state.stepNumber = history.length;
           // If the gravity was turned on with a click, we clear the board transition
-          state.transitions = {slots: transitions, board: launchedWithClick ? null : state.transitions.board};
+          state.transitions = {slots: transitions, board: launchedWithClick ? 0 : state.transitions.board};
 
-          // if (state.twoPlayersMode) {
-            console.log("set db handleClick");
+          if (state.twoPlayersMode) {
+            console.log("set db toggleGravity");
             baseRef = ref(db, '/history/');
             set(baseRef, state.history);
             baseRef = ref(db, '/stepNumber/');
             set(baseRef, state.stepNumber);
             baseRef = ref(db, '/transitions/');
             set(baseRef, state.transitions);
-          // } 
+          } 
         }
       } else {
-        if (istwoPlayersMode) {
-          set(ref(getDatabase(), '/transitions/'), null);
-        }         
-        state.transitions = null;
+        if (istwoPlayersMode) set(ref(getDatabase(), '/transitions/'), {slots:0, board:0});
+        state.transitions = {slots:0, board:0};
       }
     },
 
@@ -293,10 +290,10 @@ export const connectXSlice = createSlice({
       history = history.slice(0, stepNumber);
       state.history = history.concat([{slots: newSlots, boardFlip: boardFlip}]);
       state.stepNumber = history.length;
-      state.transitions = {slots: null, board: flipValue * -90};
+      state.transitions = {slots: 0, board: flipValue * -90};
 
-      // if (state.twoPlayersMode) {
-        console.log("set db handleClick");
+      if (!state.gravIsOn && state.twoPlayersMode) {
+        console.log("set db flipBoard");
         const db = getDatabase();
         let baseRef = ref(db, '/history/');
         set(baseRef, state.history);      
@@ -304,13 +301,14 @@ export const connectXSlice = createSlice({
         set(baseRef, state.stepNumber);
         baseRef = ref(db, '/transitions/');
         set(baseRef, state.transitions);
-      // } 
+      } 
     },
 
     setGameSettings: (state, action) => {
-      state.gameSettings = action.payload;
+      const settings = action.payload;
+      state.gameSettings = settings;
       state.history = [{
-        slots: Array(action.payload.width * action.payload.height).fill(null),
+        slots: Array(settings.width * settings.height).fill('null'),
         boardFlip: 0
       }];
     },
@@ -322,7 +320,7 @@ export const connectXSlice = createSlice({
       } else {
         state.history = state.history.slice(0,1);
         state.stepNumber = 0;
-        state.transitions = null;
+        state.transitions = {slots:0, board:0};
         state.gravIsOn = false;
         state.sortIsAsc = true;
       }
@@ -332,20 +330,27 @@ export const connectXSlice = createSlice({
     builder
       .addCase(updateGameAsync.pending, (state) => {
         // state.status = 'loading';
-        console.log("pending");
+        console.log("updateGameAsync pending");
       })
       .addCase(updateGameAsync.fulfilled, (state, action) => {
         // state.status = 'idle';
-        console.log("fulfilled", action.payload);
+        console.log("updateGameAsync");
         const data = action.payload;
-        // Handle history by filling the empty slots with the string 'null'
+        // if (state.twoPlayersMode && !data.players) {
+        if (data === null) {
+          window.alert('Your opponent left! Reload the page to exit the current game');
+          state.twoPlayersMode = false;
+          return;
+        }
+
         state.history = data.history;
         state.stepNumber = data.stepNumber;
-        // Turn data.transitions back into array filled with null
-        state.transitions = data.transitions;
+        const transitions = data.transitions;
+        state.transitions = {slots:transitions.slots, board:transitions.board};
         state.gravIsOn = data.gravIsOn;
       })
       .addCase(requestGameAsync.fulfilled, (state, action) => {
+        console.log("requestGameAsync");
         // state.status = 'idle';
         const players = action.payload;
         const playersRefs = Object.keys(players);
@@ -353,18 +358,32 @@ export const connectXSlice = createSlice({
         // console.log("response",response);
         // console.log("response",response);        
         // console.log("fulfilled", Object.keys(action.payload));
-        console.log("fulfilled", Object.keys(players));
+        // console.log("fulfilled", Object.keys(players));
         // console.log("fulfilled", [...action.payload]);
         if(playersRefs.length === 1) {
-          state.players = [players[playersRefs[0]]];
+          state.players = [{pseudo: players[playersRefs[0]].pseudo, sign: 'O'}];
+          state.transitions = {slots:0, board:0};        
         } else if (playersRefs.length >= 2) {
-          state.players = [players[playersRefs[0]],players[playersRefs[1]]];
+          state.players = [{pseudo: players[playersRefs[0]].pseudo, sign: 'O'},{pseudo: players[playersRefs[1]].pseudo, sign: 'X'}];
           state.twoPlayersMode = true;
 
-          state.history = state.history.slice(0,1);
+          const history = state.history.slice(0,1);
+          state.history = history;
           state.stepNumber = 0;
-          state.transitions = null;
-          state.gravIsOn = false;
+          const transitions = {slots:0, board:0};
+          state.transitions = transitions;
+          state.gravIsOn = true;
+
+          console.log("set db requestGame");
+          const db = getDatabase();
+          let baseRef = ref(db, '/history/');
+          set(baseRef, history);      
+          baseRef = ref(db, '/stepNumber/');
+          set(baseRef, 0);
+          baseRef = ref(db, '/transitions/');
+          set(baseRef, transitions);
+          baseRef = ref(db, '/gravIsOn/');
+          set(baseRef, true);                   
         }
       });
   }  
@@ -418,23 +437,21 @@ export const requestGame = (pseudo) => (dispatch, getState) => {
   // ===> conditionnally call any reducer using selectPlayers
   // ==> always write the player, even solo, in the db, add logic to make sure the same player isnt added twice,
   // or that more than 2 players are added
-  console.log("requestGame",pseudo)
+  // console.log("requestGame",pseudo)
   set(push(ref(getDatabase(), 'players')), {
     pseudo
   });
-  // const watchTimer = setInterval(() => {
+  const watchTimer = setInterval(() => {
     dispatch(requestGameAsync());
-  // }, 4000);
+  }, 4000);
 };
 
-export const startWatchingStepNumber = (pseudo) => (dispatch, getState) => {
-  const isInTwoPlayersMode = selectTwoPlayersMode(getState());
-  // const isInTwoPlayersMode = players.length === 2 && players.find(e => e.pseudo === pseudo);
-  if (isInTwoPlayersMode /*&& "isNotMyTurn"*/) {
+export const startWatchingStepNumber = () => (dispatch, getState) => {
     const watchTimer = setInterval(() => {
-      dispatch(updateGameAsync(selectStepNumber(getState())));
-    }, 4000);
-  }
+      if (selectTwoPlayersMode(getState())) {
+        dispatch(updateGameAsync(selectStepNumber(getState())));
+      }
+    }, 5500);
 };  
 
 export default connectXSlice.reducer;
