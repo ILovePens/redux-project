@@ -5,8 +5,7 @@ import styles from '../ConnectX.module.css';
 class Form extends React.Component {
 	prepareInfos = event => {
 		event.preventDefault();
-		// We prepare the message details as an object
-		// before sending them to the state
+
 		const gameInfos = {
 			width: parseInt(this.width.value),
 			height: parseInt(this.height.value),

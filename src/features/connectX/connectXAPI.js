@@ -1,10 +1,8 @@
 import { getDatabase, ref, get} from "firebase/database";
 
-export function readStepnumber(stepNumber) {
+export function compareGameState(stepNumber) {
 	const db = getDatabase();
-
   return new Promise((resolve) => {
-
     get(ref(db, `/players`)).then((playersSnapshot) => {
 			if (playersSnapshot.exists()) {
 				get(ref(db, `/stepNumber`)).then((readStepNumber) => {
@@ -33,37 +31,28 @@ export function readStepnumber(stepNumber) {
     }).catch((error) => {
 		  console.error(error);
 		});
-
-
-    // onValue(ref(getDatabase(), `/stepNumber`), (snapshot) => {
-    //   var data = snapshot.val();
-    //   console.log("snapshot",data);
-    //   resolve(data);
-    // }/*, {
-    //   onlyOnce: true
-    // }*/);
   });
 }
 
 export function readPlayers() {
+	const db = getDatabase();
   return new Promise((resolve) => {  	
-		get(ref(getDatabase(), `/players`)).then((snapshot) => {
-			if (snapshot.exists()) {
-		    var data = snapshot.val();
-		    // console.log("snapshot",data);
-		    resolve(data);
+		get(ref(db, `/players`)).then((players) => {
+			if (players.exists()) {
+				get(ref(db, `/gameIsOn`)).then((snapshot) => {
+					if (snapshot.exists()) {
+				    resolve({players: players.val(), gameIsOn: snapshot.val()});
+				  } else {
+				    console.log("No data available");
+				  }
+				}).catch((error) => {
+				  console.error(error);
+				});		    
 		  } else {
 		    console.log("No data available");
 		  }
 		}).catch((error) => {
 		  console.error(error);
 		});
-    // onValue(ref(getDatabase(), `/stepNumber`), (snapshot) => {
-    //   var data = snapshot.val();
-    //   console.log("snapshot",data);
-    //   resolve(data);
-    // }/*, {
-    //   onlyOnce: true
-    // }*/);
   });
 }

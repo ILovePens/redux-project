@@ -7,11 +7,8 @@ import {
   toggleGravity,
   flipBoard,
   sendGameSettings,
-  syncBase,
-  loadData,
-  startWatchingStepNumber,
+  watchGame,
   requestGame,
-  writeData,
   reset,
 
   selectTwoPlayersMode,
@@ -36,16 +33,15 @@ import "firebase/database";
 
 export function ConnectX(props) {
   const dispatch = useDispatch();
-  dispatch(writeData());
+
   const history = useSelector(selectHistory);
   const stepNumber = useSelector(selectStepNumber);
-  // const stepNumber = 0;
 
   const currentSlots = history[stepNumber].slots;
   const players = useSelector(selectPlayers);
   const inGame = useSelector(selectTwoPlayersMode);
-  console.log("inGame", inGame);
   const pseudo = props.pseudo;
+
   let gameSettingsForm = <Form sendGameSettings={(i) => dispatch(sendGameSettings(i))} />
   let requestGameButton = <button onClick={() => dispatch(requestGame(pseudo))}>Request game</button>
 
@@ -53,21 +49,17 @@ export function ConnectX(props) {
   let toggleGravityFunc = () => dispatch(toggleGravity(true));
   let flipBoardR = () => dispatch(flipBoard(1));
   let flipBoardL = () => dispatch(flipBoard(-1));
-  // Look for our own pseudo in players, the first pseudo is X and starts the game
-  // ==> assign the player value indicator inside the player object
+
   let player = (stepNumber % 2) === 0 ?  'X' : 'O';
-  console.log("players", players);
+
   if (players.length > 0) {
     const myPlayer = players.find(e => e.pseudo === pseudo);
-    console.log("myPlayer",myPlayer);
     const isPlayer = myPlayer !== -1;
-    console.log("isPlayer",isPlayer);
     const gameInProgress = players.length === 2 && !isPlayer;
     const waitingForGame = players.length === 1 && isPlayer;
-    // const inGame = players.length === 2 && isPlayer;
-    console.log("waitingForGame", waitingForGame);
-    console.log("gameInProgress", gameInProgress);
-  
+
+    console.log("myPlayer",myPlayer);
+    console.log("player",player);
     if (waitingForGame || inGame) {
       window.onunload = function(event) {
         dispatch(reset(true));
@@ -81,8 +73,7 @@ export function ConnectX(props) {
     if (inGame) {
       const isMyTurn = myPlayer.sign === player ? true : false;
       if (!isMyTurn) {
-        console.log("in game update")
-        dispatch(startWatchingStepNumber());
+        dispatch(watchGame());
 
         // DEACTIVATE DB STATE CHANGING ACTIONS
         boardClickFunc = () => {};
@@ -93,7 +84,6 @@ export function ConnectX(props) {
     }
   }
 
-
   const gameSettings = useSelector(selectGameSettings);
   const boardFlip = history[stepNumber].boardFlip;
   let boardParams = {
@@ -102,15 +92,11 @@ export function ConnectX(props) {
   }
 
   let transitions = useSelector(selectTransitions);
-  // console.log(transitions);
-  // if (transitions && !transitions.board && transitions.slots.find(e => e !== 'null') === -1) transitions = null;
-  // console.log(transitions);
   let winIndexes = [];
   const scoreTarget = gameSettings.scoreTarget;
   if (stepNumber >= (scoreTarget * 2 - 1)) {
     const boardWidth = boardFlip % 2 === 0 ? boardParams.width : boardParams.height;
     winIndexes = calculateWinner((history[stepNumber - 1]).slots, currentSlots, scoreTarget, boardWidth);
-  // console.log("winIndexes",winIndexes);
   }
   // We create the move list to be displayed from the history
   let moves = history.map((step, move) => {
@@ -140,8 +126,6 @@ export function ConnectX(props) {
 
   ////////////////////// SET better rules for the game flow and build next player detection accordingly ////////////
   // Choose which game status has to be displayed
-
-
   let status;
 
   if (winIndexes.length) {
