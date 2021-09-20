@@ -1,4 +1,5 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import { useDispatch } from 'react-redux';
 import { getDatabase, ref, set, push, get, remove, onValue} from "firebase/database";
 
 import { compareGameState,  readPlayers} from './connectXAPI';
@@ -15,7 +16,7 @@ const initialState = {
     scoreTarget: 4 
   },
   sortIsAsc: true,
-  gravIsOn: false,
+  gravIsOn: true,
   transitions: {slots:0, board:0},
   twoPlayersMode: false,
   players: [],
@@ -269,7 +270,7 @@ export const connectXSlice = createSlice({
         state.history = state.history.slice(0,1);
         state.stepNumber = 0;
         state.transitions = {slots:0, board:0};
-        state.gravIsOn = false;
+        state.gravIsOn = true;
         state.sortIsAsc = true;
       }
     }
@@ -310,13 +311,15 @@ export const connectXSlice = createSlice({
         } else if (playersRefs.length >= 2) {
           state.players = [{pseudo: players[playersRefs[0]].pseudo, sign: 'O'},{pseudo: players[playersRefs[1]].pseudo, sign: 'X'}];
           state.twoPlayersMode = true;
-
+          
+          const dispatch = useDispatch();
+          dispatch(reset(true));
           const history = state.history.slice(0,1);
-          state.history = history;
-          state.stepNumber = 0;
+          // state.history = history;
+          // state.stepNumber = 0;
           const transitions = {slots:0, board:0};
-          state.transitions = transitions;
-          state.gravIsOn = true;
+          // state.transitions = transitions;
+          // state.gravIsOn = true;
 
           if (!data.gameIsOn) {
             console.log("set db requestGame");

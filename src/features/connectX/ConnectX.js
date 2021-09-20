@@ -94,6 +94,7 @@ export function ConnectX(props) {
   let transitions = useSelector(selectTransitions);
   let winIndexes = [];
   const scoreTarget = gameSettings.scoreTarget;
+  console.log("scoreTarget",scoreTarget);
   if (stepNumber >= (scoreTarget * 2 - 1)) {
     const boardWidth = boardFlip % 2 === 0 ? boardParams.width : boardParams.height;
     winIndexes = calculateWinner((history[stepNumber - 1]).slots, currentSlots, scoreTarget, boardWidth);
@@ -164,7 +165,7 @@ export function ConnectX(props) {
           <button onClick={() => flipBoardR()}>Flip right</button>
           <button onClick={() => flipBoardL()}>Flip left</button>
           <Switch isOn={!sortIsAsc} onClick={() => dispatch(toggleSort())}/>
-          <Switch isOn={useSelector(selectGravityState)} onClick={() => toggleGravityFunc()}/>
+          <Switch isOn={!useSelector(selectGravityState)} onClick={() => toggleGravityFunc()}/>
           <Reset title="Reset" onClick={() => dispatch(reset())}/>
         </div>
       {/*Restructure the scroll box so it expands as the moves come in, but make it scrollable so it slides under the main div
