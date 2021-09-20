@@ -32,8 +32,11 @@ export const updateStateAsync = createAsyncThunk(
 
 export const requestGameAsync = createAsyncThunk(
   'connectX/readPlayers',
-  async () => {
+  async (arg, thunkAPI) => {
     const response = await readPlayers();
+    const players = response.players;
+    // console.log("thunkAPI",thunkAPI);
+    if (Object.keys(players).length >= 2) thunkAPI.dispatch(reset(false)); 
     return response;
   }
 );
@@ -265,7 +268,10 @@ export const connectXSlice = createSlice({
     reset: (state, action) => {
       const isDbReset = action.payload;
       if (isDbReset) {
-        remove(ref(getDatabase(), '/players/'));
+        const db = getDatabase();
+        set(ref(db, 'gameIsOn'), false).then(() => {
+          remove(ref(db, '/players/'));
+        });       
       } else {
         state.history = state.history.slice(0,1);
         state.stepNumber = 0;
@@ -307,13 +313,14 @@ export const connectXSlice = createSlice({
 
         if(playersRefs.length === 1) {
           state.players = [{pseudo: players[playersRefs[0]].pseudo, sign: 'O'}];
-          state.transitions = {slots:0, board:0};        
+          state.transitions = {slots:0, board:0};
         } else if (playersRefs.length >= 2) {
-          state.players = [{pseudo: players[playersRefs[0]].pseudo, sign: 'O'},{pseudo: players[playersRefs[1]].pseudo, sign: 'X'}];
+          const firstPlayer = state.players.slice();
+          state.players = firstPlayer.concat([{pseudo: players[playersRefs[1]].pseudo, sign: 'X'}]);          
+          // state.players = [{pseudo: players[playersRefs[0]].pseudo, sign: 'O'},{pseudo: players[playersRefs[1]].pseudo, sign: 'X'}];
           state.twoPlayersMode = true;
           
-          const dispatch = useDispatch();
-          dispatch(reset(true));
+
           const history = state.history.slice(0,1);
           // state.history = history;
           // state.stepNumber = 0;
