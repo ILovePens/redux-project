@@ -1,13 +1,13 @@
 import { getDatabase, ref, get} from "firebase/database";
 
-export function compareGameState(stepNumber) {
+export function compareGameState(turnAction) {
 	const db = getDatabase();
   return new Promise((resolve) => {
     get(ref(db, `/players`)).then((playersSnapshot) => {
 			if (playersSnapshot.exists()) {
-				get(ref(db, `/stepNumber`)).then((readStepNumber) => {
-					if (readStepNumber.exists()) {
-		        if(readStepNumber.val() !== stepNumber) {
+				get(ref(db, `/turnAction`)).then((readTurnAction) => {
+					if (turnAction.exists()) {
+		        if(readTurnAction.val() !== turnAction) {
 					    get(ref(db, `/`)).then((dataSnapshot) => {
 								if (dataSnapshot.exists()) {
 			        		resolve(dataSnapshot.val());

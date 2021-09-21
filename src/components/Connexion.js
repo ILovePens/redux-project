@@ -1,16 +1,18 @@
 import React from 'react';
+import { saveState } from '../localStorage';
 import history from '../history';
 class Connexion extends React.Component {
-	goToChat = event => {
+	goToApp = event => {
 		event.preventDefault();
 		console.log(this);
 		const pseudo = this.pseudoInput.value;
-		history.push(`/redux-project/pseudo/${pseudo}`);
+		saveState(pseudo);
+		history.push(`/redux-project/`);
 	};
 
 	render() {
 		return (
-			<div className="connexionBox" onSubmit={(i) => this.goToChat(i)}>
+			<div className="connexionBox" onSubmit={(i) => this.goToApp(i)}>
 				<form className="connexion" >
 					<input
 						type="text"

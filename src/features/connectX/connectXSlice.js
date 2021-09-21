@@ -1,12 +1,12 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { useDispatch } from 'react-redux';
-import { getDatabase, ref, set, push, get, remove, onValue} from "firebase/database";
-
+import { getDatabase, ref, set, push, remove } from "firebase/database";
+import base from '../../base';
 import { compareGameState,  readPlayers} from './connectXAPI';
 
 const initialState = {
   history: [{
-    slots: Array(42).fill('null'),
+    slots: Array(42).fill(0),
     boardFlip: 0,
   }],
   stepNumber: 0,
@@ -20,7 +20,10 @@ const initialState = {
   transitions: {slots:0, board:0},
   twoPlayersMode: false,
   players: [],
+  turnAction: 0,
 };
+
+const actionsPerTurn = 2;
 
 export const updateStateAsync = createAsyncThunk(
   'connectX/compareGameState',
@@ -54,7 +57,7 @@ export const connectXSlice = createSlice({
       const slots = current.slots.slice();
       let slotIndex = action.payload;
       // Can't play a slot if it has already been played
-      if (slots[slotIndex] !== 'null') return;
+      if (slots[slotIndex]) return;
 
       if(state.gravIsOn) {
         if (current.boardFlip % 2 === 0) {
@@ -81,7 +84,7 @@ export const connectXSlice = createSlice({
         if(slotScore) {
           // We iterate on the column the slot sits in and try to push it down, decreasing the score each time it fails
           for (let i = slotIndex + slotScore * width; i > slotIndex; i -= width) {
-            if(slots[i] === 'null') {
+            if(!slots[i]) {
               slotIndex = i;
               break;
             }
@@ -98,11 +101,12 @@ export const connectXSlice = createSlice({
       }
 
       // Or we simply put in the value if it hasn't already
-      if(slots[slotIndex] === 'null') slots[slotIndex] = (stepNumber % 2) === 0 ?  'X' : 'O';
+      if(!slots[slotIndex]) slots[slotIndex] = (stepNumber % 2) === 0 ?  'X' : 'O';
 
       // We add the current board to the history, and assign the stepNumber based on the new history
       state.history = history.concat([{slots: slots, boardFlip: current.boardFlip}]);
       state.stepNumber = history.length;
+      state.turnAction += 1;
       state.transitions = transitions && transitions.find(e => e !== 0) !== -1 ? {slots: transitions, board: 0} : {slots:0, board:0};;
       if (state.twoPlayersMode) {
         console.log("set db handleClick");
@@ -112,9 +116,12 @@ export const connectXSlice = createSlice({
         set(baseRef, {slots: slots, boardFlip: current.boardFlip}); 
         baseRef = ref(db, '/stepNumber/');
         set(baseRef, stepNumber);
+        baseRef = ref(db, '/turnAction/');
+        set(baseRef, state.turnAction);
         baseRef = ref(db, '/transitions/');
         set(baseRef, state.transitions);
-      } 
+      }
+      state.turnAction = 0;
     },
 
     changeStep: (state, action) => {
@@ -134,7 +141,12 @@ export const connectXSlice = createSlice({
       let baseRef = ref(db, '/gravIsOn/');
       if (launchedWithClick) {
         state.gravIsOn = state.gravIsOn ? false : true;
-        set(baseRef, state.gravIsOn);              
+        state.turnAction += 1;
+        if (state.twoPlayersMode) {        
+          set(baseRef, state.gravIsOn);
+          baseRef = ref(db, '/turnAction/');
+          set(baseRef, state.turnAction);
+        }
       }
 
       if (state.gravIsOn) {
@@ -163,11 +175,11 @@ export const connectXSlice = createSlice({
             for (let l = count; l > 0; l--) {
               let index = i - j;
               let targetIndex = index + width * l;
-              if(slots[index] && slots[targetIndex] === 'null') {
+              if(slots[index] && !slots[targetIndex]) {
                 // If the slot is filled and the destination is free, we switch the values
                 // (l) provides the height indication for the animation
                 slots[targetIndex] = slots[index];
-                slots[index] = 'null';
+                slots[index] = 0;
 
                 slotsChanged = true;
                 transitions[targetIndex] = l;
@@ -177,20 +189,21 @@ export const connectXSlice = createSlice({
           }
           count++;
         }
+
         // We only update the board if gravity brought change
         if(slotsChanged) {
           history = history.slice(0, stepNumber);
           state.history = history.concat([{slots: slots, boardFlip: current.boardFlip}]);
-          state.stepNumber = history.length;
+
           // If the gravity was turned on with a click, we clear the board transition
           state.transitions = {slots: transitions, board: launchedWithClick ? 0 : state.transitions.board};
 
           if (state.twoPlayersMode) {
             console.log("set db toggleGravity");
             baseRef = ref(db, `/history/${stepNumber}`);
-            set(baseRef, {slots: slots, boardFlip: current.boardFlip}); 
-            baseRef = ref(db, '/stepNumber/');
-            set(baseRef, state.stepNumber);
+            set(baseRef, {slots: slots, boardFlip: current.boardFlip});
+            baseRef = ref(db, '/turnAction/');
+            set(baseRef, state.turnAction);            
             baseRef = ref(db, '/transitions/');
             set(baseRef, state.transitions);
           } 
@@ -239,20 +252,20 @@ export const connectXSlice = createSlice({
         }
         rowCount--;
       }
+      state.turnAction += 1;
       history = history.slice(0, stepNumber);
       state.history = history.concat([{slots: newSlots, boardFlip: boardFlip}]);
-      state.stepNumber = history.length;
       state.transitions = {slots: 0, board: flipValue * -90};
 
       if (!state.gravIsOn && state.twoPlayersMode) {
         console.log("set db flipBoard");
         const db = getDatabase();
         let baseRef = ref(db, `/history/${stepNumber}`);
-        set(baseRef, {slots: newSlots, boardFlip: boardFlip});      
-        baseRef = ref(db, '/stepNumber/');
-        set(baseRef, state.stepNumber);
+        set(baseRef, {slots: newSlots, boardFlip: boardFlip});
         baseRef = ref(db, '/transitions/');
         set(baseRef, state.transitions);
+        baseRef = ref(db, '/turnAction/');
+        set(baseRef, state.turnAction);        
       } 
     },
 
@@ -260,7 +273,7 @@ export const connectXSlice = createSlice({
       const settings = action.payload;
       state.gameSettings = settings;
       state.history = [{
-        slots: Array(settings.width * settings.height).fill('null'),
+        slots: Array(settings.width * settings.height).fill(0),
         boardFlip: 0
       }];
     },
@@ -293,14 +306,16 @@ export const connectXSlice = createSlice({
         if (data === null) {
           window.alert('Your opponent left! Reload the page to exit the current game');
           state.twoPlayersMode = false;
-          return;
-        }
 
-        state.history = data.history;
-        state.stepNumber = data.stepNumber;
-        const transitions = data.transitions;
-        state.transitions = {slots:transitions.slots, board:transitions.board};
-        state.gravIsOn = data.gravIsOn;
+        } else {
+          state.history = data.history;
+          state.stepNumber = data.stepNumber;
+          const transitions = data.transitions;
+          state.transitions = {slots:transitions.slots, board:transitions.board};
+          state.gravIsOn = data.gravIsOn;
+          const turnAction = data.turnAction;
+          state.turnAction = turnAction === actionsPerTurn ? 0 : turnAction;
+        }
       })
       .addCase(requestGameAsync.pending, (state) => {
         console.log("requestGameAsync pending");
@@ -347,7 +362,7 @@ export const connectXSlice = createSlice({
   }  
 });
 
-export const { handleClick, changeStep, toggleSort, toggleGravity, flipBoardState, setGameSettings, syncBase, loadData, writeData, reset} = connectXSlice.actions;
+export const { handleClick, changeStep, toggleSort, toggleGravity, flipBoardState, setGameSettings, reset} = connectXSlice.actions;
 
 // The function below is called a selector and allows us to select a value from
 // the state. Selectors can also be defined inline where they're used instead of
@@ -360,6 +375,7 @@ export const selectGravityState = (state) => state.connectX.gravIsOn;
 export const selectTransitions = (state) => state.connectX.transitions;
 export const selectPlayers = (state) => state.connectX.players;
 export const selectTwoPlayersMode = (state) => state.connectX.twoPlayersMode;
+export const selectTurnAction = (state) => state.connectX.turnAction;
 
 export const jumpTo = (stepNumber) => (dispatch, getState) => {
   dispatch(changeStep(stepNumber));
@@ -404,7 +420,7 @@ export const requestGame = (pseudo) => (dispatch, getState) => {
 export const watchGame = () => (dispatch, getState) => {
     const watchTimer = setInterval(() => {
       if (selectTwoPlayersMode(getState())) {
-        dispatch(updateStateAsync(selectStepNumber(getState())));
+        dispatch(updateStateAsync(selectTurnAction(getState())));
       }
     }, 3500);
 };  

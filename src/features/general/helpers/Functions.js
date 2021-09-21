@@ -24,7 +24,7 @@ export function calculateWinner(previous, current, scoreTarget, rowLength) {
       // Horizontal axis
       let streakL = 0;
       for(let i = index; i > index - scoreTarget; i--) {
-        if(current[i-1] !== 'null' && current[i-1] === currentValue && i % rowLength !== 0) {
+        if(current[i-1] && current[i-1] === currentValue && i % rowLength !== 0) {
           streakL++;
           winSlots.push(i-1);
         } else {
@@ -33,7 +33,7 @@ export function calculateWinner(previous, current, scoreTarget, rowLength) {
       }
       let streakR = 0;
       for(let i = index; i < index + scoreTarget; i++) {
-        if(current[i+1] !== 'null' && current[i+1] === currentValue && (i+1) % rowLength !== 0) {
+        if(current[i+1] && current[i+1] === currentValue && (i+1) % rowLength !== 0) {
           streakR++;
           winSlots.push(i+1);
         } else {
@@ -57,7 +57,7 @@ export function calculateWinner(previous, current, scoreTarget, rowLength) {
       // Vertical axis
       let streakT = 0;
       for(let i = index; i > index - (scoreTarget * rowLength); i -= rowLength) {
-        if(current[i-rowLength] !== 'null' && current[i-rowLength] === currentValue) {
+        if(current[i-rowLength] && current[i-rowLength] === currentValue) {
           streakT++;
           winSlots.push(i-rowLength);      
         } else {
@@ -66,7 +66,7 @@ export function calculateWinner(previous, current, scoreTarget, rowLength) {
       }
       let streakB = 0;
       for(let i = index; i < index + (scoreTarget * rowLength); i += rowLength) {
-        if(current[i+rowLength] !== 'null' && current[i+rowLength] === currentValue) {
+        if(current[i+rowLength] && current[i+rowLength] === currentValue) {
           streakB++;
           winSlots.push(i+rowLength);      
         } else {
@@ -87,7 +87,7 @@ export function calculateWinner(previous, current, scoreTarget, rowLength) {
       // Top diagonal axis
       let streakTL = 0;
       for(let i = index; i > index - scoreTarget * (rowLength + 1); i -= (rowLength + 1)) {
-        if(current[i-rowLength-1] !== 'null' && current[i-rowLength-1] === currentValue && i % rowLength !== 0) {
+        if(current[i-rowLength-1] && current[i-rowLength-1] === currentValue && i % rowLength !== 0) {
           streakTL++;
           winSlots.push(i-rowLength-1);      
         } else {
@@ -96,7 +96,7 @@ export function calculateWinner(previous, current, scoreTarget, rowLength) {
       }
       let streakBR = 0;
       for(let i = index; i < index + scoreTarget * (rowLength + 1); i += (rowLength + 1)) {
-        if(current[i+rowLength+1] !== 'null' && current[i+rowLength+1] === currentValue && (i+1) % rowLength !== 0) {
+        if(current[i+rowLength+1] && current[i+rowLength+1] === currentValue && (i+1) % rowLength !== 0) {
           streakBR++;
           winSlots.push(i+rowLength+1);      
         } else {
@@ -117,7 +117,7 @@ export function calculateWinner(previous, current, scoreTarget, rowLength) {
       // Bottom diagonal axis
       let streakTR = 0;
       for(let i = index; i > index - scoreTarget * (rowLength - 1); i -= (rowLength - 1)) {
-        if(current[i-rowLength+1] !== 'null' && current[i-rowLength+1] === currentValue && (i+1) % rowLength !== 0) {
+        if(current[i-rowLength+1] && current[i-rowLength+1] === currentValue && (i+1) % rowLength !== 0) {
           streakTR++;
           winSlots.push(i-rowLength+1);      
         } else {
@@ -126,7 +126,7 @@ export function calculateWinner(previous, current, scoreTarget, rowLength) {
       }  
       let streakBL = 0;
       for(let i = index; i < index + scoreTarget * (rowLength - 1); i += (rowLength - 1)) {
-        if(current[i+rowLength-1] !== 'null' && current[i+rowLength-1] === currentValue && i % rowLength !== 0) {
+        if(current[i+rowLength-1] && current[i+rowLength-1] === currentValue && i % rowLength !== 0) {
           streakBL++;
           winSlots.push(i+rowLength-1);      
         } else {

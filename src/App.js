@@ -5,7 +5,8 @@ import { Counter } from './features/counter/Counter';
 import { TicTacToe } from './features/tictactoe/TicTacToe';
 import { ConnectX } from './features/connectX/ConnectX';
 import { Tbd } from './features/bejeweled/Tbd';
-
+import { loadState } from './localStorage';
+import history from './history';
 // CSS
 import './App.css';
 
@@ -19,9 +20,25 @@ class App extends Component {
         'ConnectX': ConnectX,
         'Tbd': Tbd
       },
-      itemSelected: null,      
+      itemSelected: null,
+      userPseudo: "",    
     };
     this.handleClick = this.handleClick.bind(this);    
+  }
+
+  componentDidMount() {
+    let pseudo = this.state.userPseudo; 
+    console.log("componentDidMount",pseudo);
+    if (!pseudo) {
+      pseudo = loadState();
+      console.log("pseudo after loadState", pseudo);
+      if (!pseudo) pseudo = "";
+      this.setState({ userPseudo: pseudo});
+      // pseudo = this.state.userPseudo; 
+      if (!pseudo) {
+        history.push(`/redux-project/login`);
+      }
+    }
   }
 
   handleClick(i) {
@@ -29,7 +46,9 @@ class App extends Component {
   }
 
   render() {
-    const itemSelected = this.state.itemSelected ? React.createElement(this.state.items[this.state.itemSelected], {pseudo: this.props.match.params.pseudo}) : null;    
+    const pseudo = this.state.userPseudo; 
+    console.log("render",pseudo);
+    const itemSelected = this.state.itemSelected ? React.createElement(this.state.items[this.state.itemSelected], {pseudo: pseudo}) : null;    
     return (
       <div className="App">
         <Nav items={this.state.items} handleClick={this.handleClick}/>

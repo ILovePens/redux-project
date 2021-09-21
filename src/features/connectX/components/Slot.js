@@ -14,7 +14,7 @@ function Slot(props) {
 		}
 
 		// DISPLAY SLOT CONTENT //
-    const contentClass = props.value !== 'null' ? `${styles.slotContent} ${props.value === 'X' ? styles.slotContentX : styles.slotContentO}` : "";
+    const contentClass = props.value ? `${styles.slotContent} ${props.value === 'X' ? styles.slotContentX : styles.slotContentO}` : "";
     
     // DISPLAY WIN //
     const winClass = props.winStyle ? "wonSlot" : "";

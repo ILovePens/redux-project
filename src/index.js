@@ -17,19 +17,19 @@ import { Provider } from 'react-redux';
 
 const baseURL = "/redux-project";
 
-const persistedState = loadState();
+// const persistedState = loadState();
 
-store.subscribe(() => {
-	saveState(store.getState());
-})
+// store.subscribe(() => {
+// 	saveState(store.getState());
+// })
 
 ReactDOM.render(
   <React.StrictMode>
     <Provider store={store}>
 			<Router history={history}>
 				<Switch>
-					<Route exact path={`${baseURL}/`} component={Connexion} />
-					<Route path={`${baseURL}/pseudo/:pseudo`}  component={App} /> 
+					<Route exact path={`${baseURL}/login`} component={Connexion} />
+					<Route path={`${baseURL}`} component={App} /> 
 					<Route component={NotFound}/>
 				</Switch>
 			</Router>

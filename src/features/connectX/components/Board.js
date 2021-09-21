@@ -1,18 +1,11 @@
 import React from 'react';
 import Slot from './Slot';
-import base from '../../../base';
-import { getDatabase } from "firebase/database";
 
-// const database = getDatabase();
 // STYLE
 import { animateBoards, styleWin } from '../ConnectXTransitions.js';
 import styles from '../ConnectX.module.css';
 
 class Board extends React.Component {
-  componentDidMount() {
-    if(this.props.isMainBoard) {
-    }
-  }
 
   // ANIMATION & WIN TRIGGER //
   componentDidUpdate() {
@@ -20,7 +13,6 @@ class Board extends React.Component {
     const transitions = this.props.transitions;
     if(this.props.isMainBoard) {
 
-    // console.log('main upadte')
       // If transitions are present, we play them
       if (transitions && (transitions.slots || transitions.board)) {
         animateBoards();
@@ -46,16 +38,16 @@ class Board extends React.Component {
     const winIndexes = isBoardWon ? this.props.winIndexes : null;
     const winStyle = winIndexes && winIndexes.includes(i) ? true : false;  
 
-    // Assign the slot a score based on the animation map: the higher the score, the longer the aniamtion 
     const transitions = this.props.transitions ? this.props.transitions.slots : null;
     let slotScore = 0;
     let animationCallback;
-    if(transitions && transitions[i] !== 'null') {
+    if(transitions && transitions[i]) {
+      // Assign the slot a score based on the animation map: the higher the score, the longer the animation 
       slotScore = transitions[i];
       if(isBoardWon) { // For now we only put the callback to style a win 
         // Sort out the null elements, then sort in descending order the slotScores that are left inside
         // and take out the first value, which indicates the maximum animation score for this render
-        const maxScore = transitions.filter(el => {return el !== 'null';}).sort((a, b) => b - a)[0];
+        const maxScore = transitions.filter(el => {return el !== 0;}).sort((a, b) => b - a)[0];
         // Finds the first index with a maxScore in the map and check if it corresponds to the current index
         const isFirstMaxScoreSlot = i === transitions.findIndex(e => e === maxScore);
         // We make this slot a reference for the longest animation and put the callback onto it

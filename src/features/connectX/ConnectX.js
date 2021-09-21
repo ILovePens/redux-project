@@ -11,7 +11,9 @@ import {
   requestGame,
   reset,
 
+  actionsPerTurn,
   selectTwoPlayersMode,
+  selectTurnAction,
   selectPlayers,
   selectTransitions,
   selectGravityState,  
@@ -38,6 +40,7 @@ export function ConnectX(props) {
   const stepNumber = useSelector(selectStepNumber);
 
   const currentSlots = history[stepNumber].slots;
+  const turnAction = useSelector(selectTurnAction);
   const players = useSelector(selectPlayers);
   const inGame = useSelector(selectTwoPlayersMode);
   const pseudo = props.pseudo;
@@ -83,6 +86,13 @@ export function ConnectX(props) {
       }
     }
   }
+
+  if (turnAction) {
+    toggleGravityFunc = () => {};
+    flipBoardR = () => {};
+    flipBoardL = () => {};
+  }
+
 
   const gameSettings = useSelector(selectGameSettings);
   const boardFlip = history[stepNumber].boardFlip;
