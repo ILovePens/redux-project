@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
+// import logo from './logo.svg';
 import { Nav } from './features/nav/Nav';
 import { Counter } from './features/counter/Counter';
 import { TicTacToe } from './features/tictactoe/TicTacToe';
@@ -34,7 +34,6 @@ class App extends Component {
       console.log("pseudo after loadState", pseudo);
       if (!pseudo) pseudo = "";
       this.setState({ userPseudo: pseudo});
-      // pseudo = this.state.userPseudo; 
       if (!pseudo) {
         history.push(`/redux-project/login`);
       }

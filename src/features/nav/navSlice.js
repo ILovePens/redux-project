@@ -1,5 +1,4 @@
 import { createSlice } from '@reduxjs/toolkit';
-// import { fetchCount } from './navAPI';
 
 const initialState = {
 };
@@ -19,6 +18,5 @@ export const navSlice = createSlice({
 
 export const { reset } = navSlice.actions;
 
-// export const selectSortIsAsc = (state) => state.nav.sortIsAsc;
 
 export default navSlice.reducer;

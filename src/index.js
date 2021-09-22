@@ -9,19 +9,12 @@ import history from './history';
 import Connexion from './components/Connexion'
 import App from './App';
 import NotFound from './components/NotFound'
-import { loadState, saveState} from './localStorage'
 
 import store from './app/store';
 import { Provider } from 'react-redux';
 // import * as serviceWorker from './serviceWorker';
 
 const baseURL = "/redux-project";
-
-// const persistedState = loadState();
-
-// store.subscribe(() => {
-// 	saveState(store.getState());
-// })
 
 ReactDOM.render(
   <React.StrictMode>

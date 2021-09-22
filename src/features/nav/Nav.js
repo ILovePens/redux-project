@@ -2,7 +2,7 @@ import React from 'react';
 import { useDispatch } from 'react-redux';
 import { reset } from './navSlice';
 import { Reset } from '../general/helpers/Components';
-import styles from './Nav.module.css';
+// import styles from './Nav.module.css';
 
 export function Nav(props) {
   const dispatch = useDispatch();

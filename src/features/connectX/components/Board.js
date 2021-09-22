@@ -126,10 +126,9 @@ class Board extends React.Component {
 
   render() {
     // The board flip indicates us which dimension to take as which for the board
-    if (this.props.flip % 2 === 0) {
-      var boardParams = this.props.boardParams;
-    } else {
-      var boardParams = {width: this.props.boardParams.height, height: this.props.boardParams.width};
+    let boardParams = this.props.boardParams;
+    if (this.props.flip % 2 !== 0) {
+      boardParams = {width: boardParams.height, height: boardParams.width};
     }
 
     const isMainBoard = this.props.isMainBoard;

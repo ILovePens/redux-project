@@ -1,16 +1,5 @@
-// import Rebase from 're-base';
-
-import firebase from 'firebase/app';
 import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, getDocs } from 'firebase/firestore/lite';
-
-// const database = getDatabase();
-// import 'firebase/database';
-// Add onValue event to the history and gravity to watch for the opponent move
-// Maybe add onValue to a new state related to a game happening between players :
-// By turning it on, a pop up appears prompting for a player
-// If it's on, goToStep and sendGamesettings are unavailable until the game ends
-// All controls are diasbled when it's not your turn or if a game is happening
+import { getFirestore } from 'firebase/firestore/lite';
 
 const firebaseConfig = {
   apiKey: "AIzaSyDVe3axD8Y3GnxcnsnDuDz_FHCKYJcu6gg",
@@ -25,7 +14,5 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const base = getFirestore(app);
-
-// var base = Rebase.createClass(db);
 
 export default base;

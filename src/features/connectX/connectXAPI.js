@@ -3,35 +3,26 @@ import { getDatabase, ref, get} from "firebase/database";
 export function compareGameState(turnAction) {
 	const db = getDatabase();
   return new Promise((resolve) => {
-    get(ref(db, `/players`)).then((playersSnapshot) => {
-			if (playersSnapshot.exists()) {
-				get(ref(db, `/turnAction`)).then((readTurnAction) => {
-					if (turnAction.exists()) {
-		        if(readTurnAction.val() !== turnAction) {
-					    get(ref(db, `/`)).then((dataSnapshot) => {
-								if (dataSnapshot.exists()) {
-			        		resolve(dataSnapshot.val());
-							  } else {
-							    console.log("No data available");
-							  }
-					    }).catch((error) => {
-							  console.error(error);
-							});
-				    }
-				  } else {
-				    console.log("No data available");
-				  }
-				}).catch((error) => {
-				  console.error(error);
-				});
-
+		get(ref(db, `/turnAction`)).then((readTurnAction) => {
+			if (readTurnAction.exists()) {
+        if(readTurnAction.val() !== turnAction) {
+			    get(ref(db, `/`)).then((dataSnapshot) => {
+						if (dataSnapshot.exists()) {
+	        		resolve(dataSnapshot.val());
+					  } else {
+					    console.log("No data available");
+					  }
+			    }).catch((error) => {
+					  console.error(error);
+					});
+		    }
 		  } else {
-			  resolve(null);
+		    console.log("No data available");
 		  }
-    }).catch((error) => {
+		}).catch((error) => {
 		  console.error(error);
 		});
-  });
+	});
 }
 
 export function readPlayers() {

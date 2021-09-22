@@ -1,19 +1,20 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import {
-  handleClick,
+  fillSlot,
   jumpTo,
   toggleSort,
   toggleGravity,
   flipBoard,
+  endTurn,  
   sendGameSettings,
   watchGame,
   requestGame,
   reset,
+  endTwoPlayersGame,
 
-  actionsPerTurn,
-  selectTwoPlayersMode,
   selectTurnAction,
+  selectNextPlayer,
   selectPlayers,
   selectTransitions,
   selectGravityState,  
@@ -29,43 +30,40 @@ import { calculateWinner } from '../general/helpers/Functions';
 // CSS
 import styles from './ConnectX.module.css';
 
-// DATABASE
-import { getDatabase, ref } from "firebase/database";
-import "firebase/database";
-
 export function ConnectX(props) {
   const dispatch = useDispatch();
 
-  const history = useSelector(selectHistory);
+  let history = useSelector(selectHistory);
   const stepNumber = useSelector(selectStepNumber);
 
   const currentSlots = history[stepNumber].slots;
   const turnAction = useSelector(selectTurnAction);
   const players = useSelector(selectPlayers);
-  const inGame = useSelector(selectTwoPlayersMode);
   const pseudo = props.pseudo;
 
   let gameSettingsForm = <Form sendGameSettings={(i) => dispatch(sendGameSettings(i))} />
   let requestGameButton = <button onClick={() => dispatch(requestGame(pseudo))}>Request game</button>
+  let endTurnButton = null;
 
-  let boardClickFunc = (i) => dispatch(handleClick(i));
+  let fillSlotFunc = (i) => dispatch(fillSlot(i));
   let toggleGravityFunc = () => dispatch(toggleGravity(true));
   let flipBoardR = () => dispatch(flipBoard(1));
   let flipBoardL = () => dispatch(flipBoard(-1));
 
-  let player = (stepNumber % 2) === 0 ?  'X' : 'O';
+  let player = useSelector(selectNextPlayer);
 
   if (players.length > 0) {
     const myPlayer = players.find(e => e.pseudo === pseudo);
     const isPlayer = myPlayer !== -1;
     const gameInProgress = players.length === 2 && !isPlayer;
     const waitingForGame = players.length === 1 && isPlayer;
+    const inGame = players.length === 2 && isPlayer;
 
     console.log("myPlayer",myPlayer);
     console.log("player",player);
     if (waitingForGame || inGame) {
       window.onunload = function(event) {
-        dispatch(reset(true));
+        dispatch(endTwoPlayersGame());
       };
       gameSettingsForm = null;
     }
@@ -77,9 +75,7 @@ export function ConnectX(props) {
       const isMyTurn = myPlayer.sign === player ? true : false;
       if (!isMyTurn) {
         dispatch(watchGame());
-
-        // DEACTIVATE DB STATE CHANGING ACTIONS
-        boardClickFunc = () => {};
+        fillSlotFunc = () => {};
         toggleGravityFunc = () => {};
         flipBoardR = () => {};
         flipBoardL = () => {};
@@ -87,12 +83,19 @@ export function ConnectX(props) {
     }
   }
 
-  if (turnAction) {
-    toggleGravityFunc = () => {};
-    flipBoardR = () => {};
-    flipBoardL = () => {};
+  // We want the player to use one of his two actions to fill a slot
+  console.log("turnAction",turnAction)
+  if (turnAction.number) {
+    const previousAction = turnAction.action;
+    if (previousAction === 1) {
+      fillSlotFunc = () => {};
+      endTurnButton = <button onClick={() => dispatch(endTurn())}>End turn</button>
+    } else {
+      toggleGravityFunc = () => {};
+      flipBoardR = () => {};
+      flipBoardL = () => {};
+    }
   }
-
 
   const gameSettings = useSelector(selectGameSettings);
   const boardFlip = history[stepNumber].boardFlip;
@@ -110,10 +113,13 @@ export function ConnectX(props) {
     winIndexes = calculateWinner((history[stepNumber - 1]).slots, currentSlots, scoreTarget, boardWidth);
   }
   // We create the move list to be displayed from the history
+  // history = Object.assign([], history);
+  // const lastMove = history[history.length - 1];
+  // history.push(history[history.length - 1]);
   let moves = history.map((step, move) => {
     const desc = move ?'Move #' + move : 'Game start';
     const isSelected = stepNumber === move ? true : false;
-    const isLatestHistoryMove = move && move === history.length - 1;
+    const isLatestHistoryMove = move === history.length - 1;
 
     return (
       <li key={move}>
@@ -153,7 +159,9 @@ export function ConnectX(props) {
     }
   } else if (!winIndexes.length && stepNumber === currentSlots.length) {
     status = 'Draw!'
-  } else {
+  } /*else if (turnAction.action === 1) {
+    status = 'Next player: ' + player === 'X' ? 'O' : 'X'
+  } */else {
     status = 'Next player: ' + player
   }
   return (
@@ -166,7 +174,7 @@ export function ConnectX(props) {
         transitions={transitions}
         flip={boardFlip}
         winIndexes={winIndexes}
-        onClick={(i) => boardClickFunc(i)}
+        onClick={(i) => fillSlotFunc(i)}
       />
       <div className={styles.game_info}>
         <div className={styles.status}>{status}</div>
@@ -176,6 +184,7 @@ export function ConnectX(props) {
           <button onClick={() => flipBoardL()}>Flip left</button>
           <Switch isOn={!sortIsAsc} onClick={() => dispatch(toggleSort())}/>
           <Switch isOn={!useSelector(selectGravityState)} onClick={() => toggleGravityFunc()}/>
+          {endTurnButton}
           <Reset title="Reset" onClick={() => dispatch(reset())}/>
         </div>
       {/*Restructure the scroll box so it expands as the moves come in, but make it scrollable so it slides under the main div
