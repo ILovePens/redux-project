@@ -44,6 +44,7 @@ export function ConnectX(props) {
   let gameSettingsForm = <Form sendGameSettings={(i) => dispatch(sendGameSettings(i))} />
   let requestGameButton = <button onClick={() => dispatch(requestGame(pseudo))}>Request game</button>
   let endTurnButton = null;
+  let resetButton = <Reset title="Reset" onClick={() => dispatch(reset())}/>
 
   let fillSlotFunc = (i) => dispatch(fillSlot(i));
   let toggleGravityFunc = () => dispatch(toggleGravity(true));
@@ -72,6 +73,7 @@ export function ConnectX(props) {
     }
 
     if (inGame) {
+      resetButton = null;
       const isMyTurn = myPlayer.sign === player ? true : false;
       if (!isMyTurn) {
         dispatch(watchGame());
@@ -185,7 +187,7 @@ export function ConnectX(props) {
           <Switch isOn={!sortIsAsc} onClick={() => dispatch(toggleSort())}/>
           <Switch isOn={!useSelector(selectGravityState)} onClick={() => toggleGravityFunc()}/>
           {endTurnButton}
-          <Reset title="Reset" onClick={() => dispatch(reset())}/>
+          {resetButton}
         </div>
       {/*Restructure the scroll box so it expands as the moves come in, but make it scrollable so it slides under the main div
          Basically remove the scroll bar entirely, make the bottom of the page a div that translateY onScrollEvent*/}
