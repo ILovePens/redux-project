@@ -37,7 +37,6 @@ export const requestGameAsync = createAsyncThunk(
   async (arg, thunkAPI) => {
     const response = await readPlayers();
     const players = response.players;
-    // console.log("thunkAPI",thunkAPI);
     if (Object.keys(players).length >= 2) {
       if (response.gameIsOn) {
         thunkAPI.dispatch(reset(false));
@@ -56,82 +55,36 @@ export const connectXSlice = createSlice({
   reducers: {
     fillSlot: (state, action) => {
       // We ensure the erasure of any "future" steps if the game is resumed from a history move
-      let stepNumber = state.stepNumber;
-      let history = state.history.slice(0, stepNumber + 1);
-      const current = history[stepNumber];    
-      const slots = current.slots.slice();
-      let slotIndex = action.payload;
-      // Can't play a slot if it has already been played
-      if (slots[slotIndex]) return;
-
-      // Make slotValue the right value depending on stepNumber and turnAction
+      const data = action.payload;
+      let stepNumber = data.stepNumber;
+      let history = data.history;
+      const current = data.current;
+      const slots = data.slots;
+      const slotIndex = data.slotIndex;
       const slotValue = state.nextPlayer;
-      // console.log(turnAction.action, slotValue);
 
-      if(state.gravIsOn) {
-        let width = state.gameSettings.width,
-            height = state.gameSettings.height;
-        if (current.boardFlip % 2 !== 0) {
-          width = state.gameSettings.height;
-          height = state.gameSettings.width;
-        }
-
-        var transitions = Array(width * height).fill(0);
-
-        let slotScore = 0;
-        // We start iterating at the second to last row
-        for(let i = height - 1; i > 0; i--) {
-          // We then determine the height the slot sits at by testing its index,
-          // we make it a score that represents the distance that this slot can be potentially pushed down
-          if(slotIndex >= (i - 1) * width && slotIndex <= i * width - 1) {
-            slotScore = height - i;
-            break;
-          }
-        }        
-
-        if(slotScore) {
-          // We iterate on the column the slot sits in and try to push it down, decreasing the score each time it fails
-          for (let i = slotIndex + slotScore * width; i > slotIndex; i -= width) {
-            if(!slots[i]) {
-              slotIndex = i;
-              break;
-            }
-            slotScore--;
-          }
-          // We fill the appropriate slot with the value and the height it will travel during animation
-          slots[slotIndex] = slotValue;
-          if (slotScore) {
-            transitions[slotIndex] = slotScore;
-          } else {
-            transitions = null;
-          }
-        }
-      }
-
-      // Or we simply put in the value if it hasn't already
-      if(!slots[slotIndex]) slots[slotIndex] = slotValue;
+      slots[slotIndex] = slotValue;
 
       const turnAction = state.turnAction;
       if (!turnAction.action) stepNumber++;
       state.stepNumber = stepNumber;
 
       const isEndTurn = turnAction.number + 1 === actionsPerTurn;
-      console.log("isEndTurn fillSlot", isEndTurn);
-      if (isEndTurn) {
+      const gravIsOff = !state.gravIsOn;
+      if (isEndTurn && gravIsOff) {
         state.turnAction = {number:0, action:0};
         state.nextPlayer = slotValue === 'X' ? 'O' : 'X';
       } else {
         state.turnAction.number += 1;
         state.turnAction.action = 1;
       }
-
+    // state.transitions = transitions && transitions.find(e => e !== 0) !== -1 ? {slots: transitions, board: 0} : {slots:0, board:0};
       // We add the current board to the history, and assign the stepNumber based on the new history
       history = history.slice(0, stepNumber);      
       state.history = history.concat([{slots: slots, boardFlip: current.boardFlip}]);
-
-      state.transitions = transitions && transitions.find(e => e !== 0) !== -1 ? {slots: transitions, board: 0} : {slots:0, board:0};;
-      if (state.players.length === 2) {
-        console.log("set db handleClick");
+      if (gravIsOff) state.transitions = {slots:0, board:0};
+      if (state.players.length === 2 && gravIsOff) {
+        console.log("set db fillSlot");
         const db = getDatabase();
         let baseRef = ref(db, `/history/${stepNumber}`);
         set(baseRef, {slots: slots, boardFlip: current.boardFlip});
@@ -144,12 +97,14 @@ export const connectXSlice = createSlice({
         baseRef = ref(db, '/turnAction/');
         set(baseRef, state.turnAction.number);
         baseRef = ref(db, '/transitions/');
-        set(baseRef, state.transitions);
+        set(baseRef, state.transitions);        
       }
     },
 
     changeStep: (state, action) => {
       state.stepNumber = action.payload;
+      state.nextPlayer = state.stepNumber % 2 === 0 ? 'X' : 'O';      
+      state.turnAction = {number:0, action:0};          
       state.transitions = {slots:0, board:0};
     },
 
@@ -159,52 +114,73 @@ export const connectXSlice = createSlice({
     },
 
     toggleGravity: (state, action) => {
-      const launchedWithClick = action.payload;
-      const turnAction = state.turnAction;
+      const slotIndex = action.payload.slotIndex;
+      const singleSlotMode = typeof slotIndex === 'undefined' ? false : true;
 
+      // We get the slots of the currently displayed move
+      let stepNumber = state.stepNumber;  
+      let history = state.history.slice(0, stepNumber + 1);
+      const current = history[stepNumber];
+      const slots = current.slots.slice();
+
+      const isAction = action.payload.toggle;
+      const turnAction = state.turnAction;
       let isEndTurn;
-      if (launchedWithClick) {
+      if (isAction) {
         state.gravIsOn = state.gravIsOn ? false : true;
         isEndTurn = turnAction.number + 1 === actionsPerTurn;
       } else {
         isEndTurn = turnAction.number === actionsPerTurn
       }
-      console.log("isEndTurn toggleGravity", isEndTurn);
-      // We get the slots of the currently displayed move
-      let stepNumber = state.stepNumber;
-      let history = state.history.slice(0, stepNumber + 1);
-      const current = history[stepNumber];
-      const slots = current.slots.slice();  
-
       const gravIsOn = state.gravIsOn;
 
       if (gravIsOn) {
-        let width = state.gameSettings.width;
-        const height = state.gameSettings.height;
-        if (current.boardFlip % 2 !== 0) width = height;
+        let width = state.gameSettings.width,
+            height = state.gameSettings.height;
+        if (current.boardFlip % 2 !== 0) {
+          width = state.gameSettings.height;
+          height = state.gameSettings.width;
+        }
 
+        let count = 1; 
+        if (singleSlotMode) {
+          var slotScore = 0;
+          // We start iterating at the second to last row
+          for(let i = height - 1; i > 0; i--) {
+            // We then determine the height the slot sits at by testing its index,
+            // we make it a score that represents the distance that this slot can be potentially pushed down
+            if(slotIndex >= (i - 1) * width && slotIndex <= i * width - 1) {
+              slotScore = height - i;
+              break;
+            }
+          }        
+          count = slotScore;
+        }
         var transitions = Array(width * height).fill(0);
-        let count = 1;
         // We iterate through every rows, counting it (count), starting from the second to last one and going up
-        for (let i = slots.length - width - 1; i >= 0; i -= width) {
+        for (let i = slots.length - 1 - count * width; i >= 0; i -= width) {
           // We then iterate through each row, to get to each and every slot
           for (let j = 0; j < width; j++) {
             // We store (count) as a relative height we're at from the first row we go through,
             // giving us a score (l) of how many slots we'll try to "push down" the value of the slot.
             // If it fails, we loop and try to push it one slot shorter
-            for (let l = count; l > 0; l--) {
-              let index = i - j;
-              let targetIndex = index + width * l;
-              if(slots[index] && !slots[targetIndex]) {
-                // If the slot is filled and the destination is free, we switch the values
-                // (l) provides the height indication for the animation
-                slots[targetIndex] = slots[index];
-                slots[index] = 0;
-                transitions[targetIndex] = l;
-                break;
+            let index = i - j;
+            if (!singleSlotMode || slotIndex === index) {
+              for (let l = count; l > 0; l--) {
+                const targetIndex = index + width * l;
+                if(slots[index] && !slots[targetIndex]) {
+                  // If the slot is filled and the destination is free, we switch the values
+                  // (l) provides the height indication for the animation
+                  slots[targetIndex] = slots[index];
+                  slots[index] = 0;
+                  transitions[targetIndex] = l;
+                  break;
+                }
               }
+              if (slotIndex === index) break;
             }
           }
+          if (singleSlotMode) break;
           count++;
         }
       }
@@ -212,20 +188,21 @@ export const connectXSlice = createSlice({
       if (!turnAction.action) stepNumber++;
       state.stepNumber = stepNumber;
       if (isEndTurn) {
-        console.log("gravity",!turnAction.action);
         state.turnAction = {number:0, action:0};
         state.nextPlayer = state.nextPlayer === 'X' ? 'O' : 'X';        
       } else {
-        state.turnAction.number = launchedWithClick ? turnAction.number + 1 : turnAction.number;
-        state.turnAction.action = launchedWithClick ? 2 : turnAction.action;
+        state.turnAction.number = isAction ? turnAction.number + 1 : turnAction.number;
+        state.turnAction.action = isAction ? 2 : turnAction.action;
       }
 
       history = history.slice(0, stepNumber);
       state.history = history.concat([{slots: slots, boardFlip: current.boardFlip}]);
+
+      // We check if there is any slotScore > 0 so we dont expect a transition callback when there isn't
+      const hasTransitions = transitions && transitions.filter(el => {return el !== 0;}).length > 0 ? true : false;
       // If the toggle was called with a click, we clear the board transition,
       // if the gravity is turned off, we clear the slots transitions
-      state.transitions = {slots: gravIsOn ? transitions : 0, board: launchedWithClick ? 0 : state.transitions.board};
-
+      state.transitions = {slots: gravIsOn ? hasTransitions ? transitions : 0 : 0, board: isAction ? 0 : turnAction.action !== 3 ? 0 : state.transitions.board};
       if (state.players.length === 2) {  
         console.log("set db toggleGravity"); 
         const db = getDatabase();      
@@ -285,11 +262,12 @@ export const connectXSlice = createSlice({
       }
 
       const turnAction = state.turnAction;
-      const isEndTurn = turnAction.number + 1 === actionsPerTurn;
-      console.log("isEndTurn flipBoard", isEndTurn);
-      const gravIsOff = !state.gravIsOn;
       if (!turnAction.action) stepNumber++;        
       state.stepNumber = stepNumber;
+      
+      const isEndTurn = turnAction.number + 1 === actionsPerTurn;
+      const gravIsOff = !state.gravIsOn;
+
       if (isEndTurn && gravIsOff) {
         state.turnAction = {number:0, action:0};
         state.nextPlayer = state.nextPlayer === 'X' ? 'O' : 'X';        
@@ -302,7 +280,7 @@ export const connectXSlice = createSlice({
       state.history = history.concat([{slots: newSlots, boardFlip: boardFlip}]);
       state.transitions = {slots: 0, board: flipValue * -90};
 
-      if (gravIsOff && state.players.length === 2) {
+      if (state.players.length === 2 && gravIsOff) {
         console.log("set db flipBoard");
         const db = getDatabase();
         let baseRef = ref(db, `/history/${stepNumber}`);
@@ -370,6 +348,7 @@ export const connectXSlice = createSlice({
       state.stepNumber = 0;
       state.history = history;
       state.nextPlayer = 'X';      
+      state.turnAction = {number:0, action:0};      
       state.transitions = transitions;
       state.gravIsOn = true;
     },
@@ -458,10 +437,27 @@ export const jumpTo = (stepNumber) => (dispatch, getState) => {
   // }
 };
 
+export const playSlot = (slotIndex) => (dispatch, getState) => {
+  const stepNumber = selectStepNumber(getState());
+  const history = selectHistory(getState()).slice(0, stepNumber + 1);
+  const current = history[stepNumber];    
+  const slots = current.slots.slice();
+  const gravIsOn = selectGravityState(getState());
+  // Can't play a slot if it has already been played
+  if (slots[slotIndex]) return; 
+
+  const data = {stepNumber, history, current, slots, slotIndex, gravIsOn};
+  dispatch(fillSlot(data));
+
+  if(gravIsOn) {
+    dispatch(toggleGravity({toggle:false, slotIndex}));
+  }
+};
+
 export const flipBoard = (direction) => (dispatch, getState) => {
   dispatch(flipBoardState(direction));
   if(selectGravityState(getState())) {
-    dispatch(toggleGravity(false));
+    dispatch(toggleGravity({toggle:false}));
   }
 };
 

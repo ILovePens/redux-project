@@ -26,25 +26,25 @@ class Board extends React.Component {
   // TRANSITIONS CALLBACK //
   handleTransitionEnd = (event) => {
     // We wait for the end of the transitions to style the winning slots
-    styleWin();
+    if(this.props.winIndexes.length) styleWin();
   };
 
   // PREPARE THE SLOT //
-  renderSlot = (i, isBoardWon) => {
+  renderSlot = (i, isBoardWon, transition) => {
     // We deactivate the handleclick action if the board is won
     const onClickFunc = isBoardWon ? undefined : () => this.props.onClick(i);
 
     // Determine if the slot is part of a winning streak
     const winIndexes = isBoardWon ? this.props.winIndexes : null;
-    const winStyle = winIndexes && winIndexes.includes(i) ? true : false;  
+    const winStyle = winIndexes && winIndexes.includes(i) ? true : false;
 
-    const transitions = this.props.transitions ? this.props.transitions.slots : null;
     let slotScore = 0;
     let animationCallback;
-    if(transitions && transitions[i]) {
+    if(transition) {
       // Assign the slot a score based on the animation map: the higher the score, the longer the animation 
-      slotScore = transitions[i];
-      if(isBoardWon) { // For now we only put the callback to style a win 
+      slotScore = transition;
+      if(winStyle) { // For now we only put the callback to style a win 
+        const transitions = this.props.transitions.slots;
         // Sort out the null elements, then sort in descending order the slotScores that are left inside
         // and take out the first value, which indicates the maximum animation score for this render
         const maxScore = transitions.filter(el => {return el !== 0;}).sort((a, b) => b - a)[0];
@@ -70,20 +70,23 @@ class Board extends React.Component {
   createBoard = (boardParams, isMainBoard, isBoardWon) => {
     let board = []
     let index = 0;
- 
+    const transitions = this.props.transitions;
+    const slotTransitions = transitions ? this.props.transitions.slots : null;
+    let slotTransition = 0;
     // Outer loop adding the full rows to the board
     for (let i = 0; i < boardParams.height; i++) {
       let slots = [];
       // Inner loop creating the slots of the rows
       for (let j = 0; j < boardParams.width; j++) {
-        slots.push(this.renderSlot(index, isBoardWon));
+        if (slotTransitions) slotTransition = slotTransitions[index];
+        slots.push(this.renderSlot(index, isBoardWon, slotTransition));
         index++;
       }
       // At the end of the outer loop, we encapsulate our slots in row
       board.push(<div key={i} className={styles.board_row}>{slots}</div>)
     }
 
-    const startAngle = this.props.transitions && this.props.transitions.board ? this.props.transitions.board : 0;
+    const startAngle = transitions ? this.props.transitions.board : 0;
 
     return (
       <div style={{'--boardStartPos': `rotateZ(${startAngle}deg)`}}
