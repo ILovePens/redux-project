@@ -101,7 +101,7 @@ export const connectXSlice = createSlice({
       }
     },
 
-    changeStep: (state, action) => {
+    jumpTo: (state, action) => {
       state.stepNumber = action.payload;
       state.nextPlayer = state.stepNumber % 2 === 0 ? 'X' : 'O';      
       state.turnAction = {number:0, action:0};          
@@ -405,7 +405,7 @@ export const connectXSlice = createSlice({
 
 export const {
   fillSlot,
-  changeStep,
+  jumpTo,
   toggleSort,
   toggleGravity,
   flipBoardState,
@@ -428,14 +428,6 @@ export const selectNextPlayer = (state) => state.connectX.nextPlayer;
 export const selectPlayers = (state) => state.connectX.players;
 export const selectTurnAction = (state) => state.connectX.turnAction;
 
-export const jumpTo = (stepNumber) => (dispatch, getState) => {
-  dispatch(changeStep(stepNumber));
-  // When browsing the steps via the history, we want the game to get up to date if gravity is enabled,
-  // thus replacing the move we went to
-  // if(selectGravityState(getState())) {
-  //   dispatch(toggleGravity(false));
-  // }
-};
 
 export const playSlot = (slotIndex) => (dispatch, getState) => {
   const stepNumber = selectStepNumber(getState());
