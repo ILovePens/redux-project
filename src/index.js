@@ -23,7 +23,7 @@ ReactDOM.render(
 				<Switch>
 					<Route exact path={`${baseURL}/login`} component={Connexion} />
 					<Route path={`${baseURL}`} component={App} /> 
-					<Route component={NotFound}/>
+					<Route path={`${baseURL}/`} component={NotFound}/>
 				</Switch>
 			</Router>
     </Provider>

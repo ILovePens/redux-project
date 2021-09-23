@@ -474,8 +474,7 @@ export const requestGame = (pseudo) => (dispatch, getState) => {
   .then(() => {
     dispatch(requestGameAsync());
     const watchTimer = setInterval(() => {
-      console.log("test", selectPlayers(getState()).length);
-      if (selectPlayers(getState()).length) {
+      if (selectPlayers(getState()).length < 2) {
         dispatch(requestGameAsync());
       } else {
         clearInterval(watchTimer);
@@ -489,7 +488,7 @@ export const requestGame = (pseudo) => (dispatch, getState) => {
 
 export const watchGame = () => (dispatch, getState) => {
     const watchTimer = setInterval(() => {
-      if (selectPlayers(getState()).length < 2) {
+      if (!selectPlayers(getState()).length) {
         dispatch(updateStateAsync(selectTurnAction(getState())));
       } else {
         clearInterval(watchTimer);
