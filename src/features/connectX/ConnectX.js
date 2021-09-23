@@ -73,6 +73,7 @@ export function ConnectX(props) {
     if (inGame) {
       resetButton = null;
       const isMyTurn = myPlayer.sign === player ? true : false;
+      console.log(isMyTurn);
       if (!isMyTurn) {
         dispatch(watchGame());
         playSlotFunc = () => {};

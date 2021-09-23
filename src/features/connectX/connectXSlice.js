@@ -36,15 +36,20 @@ export const requestGameAsync = createAsyncThunk(
   'connectX/readPlayers',
   async (arg, thunkAPI) => {
     const response = await readPlayers();
-    const players = response.players;
-    if (Object.keys(players).length >= 2) {
+    let players = response.players;
+    const playerCount = Object.keys(players).length;
+    if (playerCount === 2) {
       if (response.gameIsOn) {
         thunkAPI.dispatch(reset(false));
       } else {
         thunkAPI.dispatch(reset(true));
       }
     }
-    return response;
+    if (playerCount > 2) {
+      thunkAPI.dispatch(endTwoPlayersGame());
+      players = []
+    } 
+    return players;
   }
 );
 
@@ -387,17 +392,19 @@ export const connectXSlice = createSlice({
         console.log("requestGameAsync pending");
       })      
       .addCase(requestGameAsync.fulfilled, (state, action) => {
-        const data = action.payload;
-        const players = data.players;
+        const players = action.payload;
         console.log("requestGameAsync",players);
         const playersRefs = Object.keys(players);
 
-        if(playersRefs.length === 1) {
+        if(playersRefs.length === 0) {
+          state.players = [];
+          window.alert('There was an issue, please try again!');          
+        } else if(playersRefs.length === 1) {
           state.players = [{pseudo: players[playersRefs[0]].pseudo, sign: 'O'}];
           state.transitions = {slots:0, board:0};
-        } else if (playersRefs.length >= 2) {
-          const firstPlayer = state.players.slice();
-          state.players = firstPlayer.concat([{pseudo: players[playersRefs[1]].pseudo, sign: 'X'}]);          
+        } else if (playersRefs.length === 2) {
+          state.players = [{pseudo: players[playersRefs[0]].pseudo, sign: 'O'},
+                           {pseudo: players[playersRefs[1]].pseudo, sign: 'X'}];          
         }
       });
   }  

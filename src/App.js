@@ -39,8 +39,8 @@ class App extends Component {
       }
     }
 
-    // const vh = window.innerHeight * 0.01;
-    // document.documentElement.style.setProperty('--vh', `${vh}px`);    
+    const vh = window.innerHeight * 0.01;
+    document.documentElement.style.setProperty('--vh', `${vh}px`);    
   }
 
   handleClick(i) {
