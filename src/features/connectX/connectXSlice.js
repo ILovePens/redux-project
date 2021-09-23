@@ -8,6 +8,7 @@ const initialState = {
     slots: Array(42).fill(0),
     boardFlip: 0,
   }],
+  turnAction: {number:0, action:0},
   stepNumber: 0,
   gameSettings: {
     width: 7,
@@ -19,7 +20,6 @@ const initialState = {
   gravIsOn: true,
   transitions: {slots:0, board:0},
   players: [],
-  turnAction: {number:0, action:0},
 };
 
 const actionsPerTurn = 2;
@@ -101,18 +101,6 @@ export const connectXSlice = createSlice({
       }
     },
 
-    jumpTo: (state, action) => {
-      state.stepNumber = action.payload;
-      state.nextPlayer = state.stepNumber % 2 === 0 ? 'X' : 'O';      
-      state.turnAction = {number:0, action:0};          
-      state.transitions = {slots:0, board:0};
-    },
-
-    toggleSort: (state) => {
-      state.sortIsAsc = state.sortIsAsc ? false : true;
-      state.transitions = {slots:0, board:0};
-    },
-
     toggleGravity: (state, action) => {
       const slotIndex = action.payload.slotIndex;
       const singleSlotMode = typeof slotIndex === 'undefined' ? false : true;
@@ -165,10 +153,10 @@ export const connectXSlice = createSlice({
             // giving us a score (l) of how many slots we'll try to "push down" the value of the slot.
             // If it fails, we loop and try to push it one slot shorter
             let index = i - j;
-            if (!singleSlotMode || slotIndex === index) {
+            if (slots[index] && (!singleSlotMode || slotIndex === index)) {
               for (let l = count; l > 0; l--) {
                 const targetIndex = index + width * l;
-                if(slots[index] && !slots[targetIndex]) {
+                if(!slots[targetIndex]) {
                   // If the slot is filled and the destination is free, we switch the values
                   // (l) provides the height indication for the animation
                   slots[targetIndex] = slots[index];
@@ -316,6 +304,18 @@ export const connectXSlice = createSlice({
       }
     },
 
+    changeStep: (state, action) => {
+      state.stepNumber = action.payload;
+      state.nextPlayer = state.stepNumber % 2 === 0 ? 'X' : 'O';      
+      state.turnAction = {number:0, action:0};          
+      state.transitions = {slots:0, board:0};
+    },
+
+    toggleSort: (state) => {
+      state.sortIsAsc = state.sortIsAsc ? false : true;
+      state.transitions = {slots:0, board:0};
+    },
+
     setGameSettings: (state, action) => {
       const settings = action.payload;
       state.gameSettings = settings;
@@ -405,7 +405,7 @@ export const connectXSlice = createSlice({
 
 export const {
   fillSlot,
-  jumpTo,
+  changeStep,
   toggleSort,
   toggleGravity,
   flipBoardState,
@@ -453,6 +453,15 @@ export const flipBoard = (direction) => (dispatch, getState) => {
   }
 };
 
+export const jumpTo = (stepNumber) => (dispatch, getState) => {
+  if (selectPlayers(getState()).length < 2) { 
+    dispatch(changeStep(stepNumber));
+    if(selectGravityState(getState())) {
+      dispatch(toggleGravity({toggle:false}));
+    }
+  }
+};
+
 export const sendGameSettings = (settings) => (dispatch) => {
   dispatch(reset());
   dispatch(setGameSettings(settings));
@@ -465,6 +474,7 @@ export const requestGame = (pseudo) => (dispatch, getState) => {
   .then(() => {
     dispatch(requestGameAsync());
     const watchTimer = setInterval(() => {
+      console.log("test", selectPlayers(getState()).length);
       if (selectPlayers(getState()).length) {
         dispatch(requestGameAsync());
       } else {
@@ -479,12 +489,12 @@ export const requestGame = (pseudo) => (dispatch, getState) => {
 
 export const watchGame = () => (dispatch, getState) => {
     const watchTimer = setInterval(() => {
-      if (!selectPlayers(getState()).length) {
+      if (selectPlayers(getState()).length < 2) {
         dispatch(updateStateAsync(selectTurnAction(getState())));
       } else {
         clearInterval(watchTimer);
       }    
-    }, 3500);
+    }, 4000);
 };  
 
 export default connectXSlice.reducer;

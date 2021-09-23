@@ -7,10 +7,12 @@
 .form {
   min-height: 22px;
   height: 5vh;
+  height: calc(var(--vh, 1vh) * 5);  
 }
 
 .main {
   height: 55vh;
+  height: calc(var(--vh, 1vh) * 55);  
 }
 
 .main_board + .title {
@@ -104,10 +106,12 @@
 
 .controls {
   height: 5vh;
+  height: calc(var(--vh, 1vh) * 5);
 }
 
 .status {
   height: 5vh;
+  height: calc(var(--vh, 1vh) * 5);
 }
 
 .moves {
@@ -138,7 +142,8 @@
 
 .scrollableY {
   overflow-y: scroll;
-  height: 20vh
+  height: 20vh;
+  height: calc(var(--vh, 1vh) * 20);  
 }
 
 .flipR .board_row{
