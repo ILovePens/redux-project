@@ -91,7 +91,8 @@ export const connectXSlice = createSlice({
       slots[slotIndex] = slotValue;
 
       const turnAction = state.turnAction;
-      if (!turnAction.action) stepNumber++;
+      const startOfTurn = !turnAction.action;
+      if (startOfTurn) stepNumber++;
       state.stepNumber = stepNumber;
 
       const isEndTurn = turnAction.number + 1 === actionsPerTurn;
@@ -113,9 +114,11 @@ export const connectXSlice = createSlice({
         const db = getDatabase();
         let baseRef = ref(db, `/history/${stepNumber}`);
         set(baseRef, {slots: slots, boardFlip: current.boardFlip});
-        if (isEndTurn) {
+        if (startOfTurn) {
           baseRef = ref(db, '/stepNumber/');
           set(baseRef, stepNumber);
+        }
+        if (isEndTurn) {
           baseRef = ref(db, '/nextPlayer/');
           set(baseRef, state.nextPlayer);        
         }
@@ -197,8 +200,8 @@ export const connectXSlice = createSlice({
           count++;
         }
       }
-
-      if (!turnAction.action) stepNumber++;
+      const startOfTurn = startOfTurn;
+      if (startOfTurn) stepNumber++;
       state.stepNumber = stepNumber;
       if (isEndTurn) {
         state.turnAction = {number:0, action:0};
@@ -223,9 +226,11 @@ export const connectXSlice = createSlice({
         set(baseRef, gravIsOn);
         baseRef = ref(db, `/history/${stepNumber}`);
         set(baseRef, {slots: slots, boardFlip: current.boardFlip});
-        if (isEndTurn) {
+        if (startOfTurn) {
           baseRef = ref(db, '/stepNumber/');
           set(baseRef, stepNumber);
+        }
+        if (isEndTurn) {
           baseRef = ref(db, '/nextPlayer/');
           set(baseRef, state.nextPlayer);
         }          
@@ -275,7 +280,8 @@ export const connectXSlice = createSlice({
       }
 
       const turnAction = state.turnAction;
-      if (!turnAction.action) stepNumber++;        
+      const startOfTurn = !turnAction.action;
+      if (startOfTurn) stepNumber++;        
       state.stepNumber = stepNumber;
       
       const isEndTurn = turnAction.number + 1 === actionsPerTurn;
@@ -298,9 +304,11 @@ export const connectXSlice = createSlice({
         const db = getDatabase();
         let baseRef = ref(db, `/history/${stepNumber}`);
         set(baseRef, {slots: newSlots, boardFlip: boardFlip});
-        if (isEndTurn) {
+        if (startOfTurn) {
           baseRef = ref(db, '/stepNumber/');
           set(baseRef, stepNumber);
+        }
+        if (isEndTurn) {
           baseRef = ref(db, '/nextPlayer/');
           set(baseRef, state.nextPlayer);
         }          
@@ -541,13 +549,14 @@ export const requestGame = (pseudo) => (dispatch, getState) => {
 };
 
 export const watchGame = () => (dispatch, getState) => {
-    const watchTimer = setInterval(() => {
-      if (selectPlayers(getState()).length === 2) {
-        dispatch(updateStateAsync(selectTurnAction(getState()).number));
-      } else {
-        clearInterval(watchTimer);
-      }    
-    }, 4000);
+  const turnData = {turnAction: selectTurnAction(getState()).number, stepNumber: selectStepNumber(getState())};
+  const watchTimer = setInterval(() => {
+    if (selectPlayers(getState()).length === 2) {
+      dispatch(updateStateAsync(turnData));
+    } else {
+      clearInterval(watchTimer);
+    }    
+  }, 4000);
 };    
 
 export default connectXSlice.reducer;

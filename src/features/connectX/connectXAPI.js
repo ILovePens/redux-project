@@ -15,22 +15,30 @@ export function readPlayers() {
   });
 }
 
-export function compareGameState(turnAction) {
+export function compareGameState(turnData) {
 	const db = getDatabase();
   return new Promise((resolve) => {
 		get(ref(db, `/turnAction`)).then((readTurnAction) => {
 			if (readTurnAction.exists()) {
-        if(readTurnAction.val() !== turnAction) {
-			    get(ref(db, `/`)).then((dataSnapshot) => {
-						if (dataSnapshot.exists()) {
-	        		resolve(dataSnapshot.val());
-					  } else {
-					    console.log("No data available");
-					  }
-			    }).catch((error) => {
-					  console.error(error);
-					});
-		    }
+				get(ref(db, `/stepNumber`)).then((readStepNumber) => {
+					if (readStepNumber.exists()) {
+		        if(readTurnAction.val() !== turnData.turnAction || readStepNumber.val() !== turnData.stepNumber) {
+					    get(ref(db, `/`)).then((dataSnapshot) => {
+								if (dataSnapshot.exists()) {
+			        		resolve(dataSnapshot.val());
+							  } else {
+							    console.log("No data available");
+							  }
+					    }).catch((error) => {
+							  console.error(error);
+							});
+				    }
+				  } else {
+				    console.log("No data available");
+				  }
+				}).catch((error) => {
+				  console.error(error);
+				});				
 		  } else {
 		    console.log("No data available");
 		  }
