@@ -16,7 +16,7 @@ const initialState = {
     height: 6,
     scoreTarget: 4 
   },
-  nextPlayer: 'X',
+  currentSign: 'X',
   sortIsAsc: true,
   gravIsOn: true,
   transitions: {slots:0, board:0},
@@ -86,7 +86,7 @@ export const connectXSlice = createSlice({
       const current = data.current;
       const slots = data.slots;
       const slotIndex = data.slotIndex;
-      const slotValue = state.nextPlayer;
+      const slotValue = state.currentSign;
 
       slots[slotIndex] = slotValue;
 
@@ -99,7 +99,7 @@ export const connectXSlice = createSlice({
       const gravIsOff = !state.gravIsOn;
       if (isEndTurn && gravIsOff) {
         state.turnAction = {number:0, action:0};
-        state.nextPlayer = slotValue === 'X' ? 'O' : 'X';
+        state.currentSign = slotValue === 'X' ? 'O' : 'X';
       } else {
         state.turnAction.number += 1;
         state.turnAction.action = 1;
@@ -120,8 +120,8 @@ export const connectXSlice = createSlice({
           baseRef = ref(db, `/history/${stepNumber}`);
           set(baseRef, {slots: slots, boardFlip: current.boardFlip});
           if (isEndTurn) {
-            baseRef = ref(db, '/nextPlayer/');
-            set(baseRef, state.nextPlayer);        
+            baseRef = ref(db, '/currentSign/');
+            set(baseRef, state.currentSign);        
           }
           baseRef = ref(db, '/turnAction/');
           set(baseRef, state.turnAction.number);
@@ -208,7 +208,7 @@ export const connectXSlice = createSlice({
       state.stepNumber = stepNumber;
       if (isEndTurn) {
         state.turnAction = {number:0, action:0};
-        state.nextPlayer = state.nextPlayer === 'X' ? 'O' : 'X';        
+        state.currentSign = state.currentSign === 'X' ? 'O' : 'X';        
       } else {
         state.turnAction.number = isAction ? turnAction.number + 1 : turnAction.number;
         state.turnAction.action = isAction ? 2 : turnAction.action;
@@ -236,8 +236,8 @@ export const connectXSlice = createSlice({
           set(baseRef, stepNumber);
         }
         if (isEndTurn) {
-          baseRef = ref(db, '/nextPlayer/');
-          set(baseRef, state.nextPlayer);
+          baseRef = ref(db, '/currentSign/');
+          set(baseRef, state.currentSign);
         }          
         baseRef = ref(db, '/turnAction/');
         set(baseRef, state.turnAction.number);
@@ -294,7 +294,7 @@ export const connectXSlice = createSlice({
 
       if (isEndTurn && gravIsOff) {
         state.turnAction = {number:0, action:0};
-        state.nextPlayer = state.nextPlayer === 'X' ? 'O' : 'X';        
+        state.currentSign = state.currentSign === 'X' ? 'O' : 'X';        
       } else {
         state.turnAction.number += 1;
         state.turnAction.action = 3;
@@ -315,8 +315,8 @@ export const connectXSlice = createSlice({
           baseRef = ref(db, `/history/${stepNumber}`);
           set(baseRef, {slots: slots, boardFlip: current.boardFlip});
           if (isEndTurn) {
-            baseRef = ref(db, '/nextPlayer/');
-            set(baseRef, state.nextPlayer);        
+            baseRef = ref(db, '/currentSign/');
+            set(baseRef, state.currentSign);        
           }
           baseRef = ref(db, '/turnAction/');
           set(baseRef, state.turnAction.number);
@@ -329,7 +329,7 @@ export const connectXSlice = createSlice({
     endTurn: (state) => {
       const turnAction = {number:0, action:0};
       state.turnAction = turnAction;
-      state.nextPlayer = state.nextPlayer === 'X' ? 'O' : 'X';
+      state.currentSign = state.currentSign === 'X' ? 'O' : 'X';
       const transitions = {slots: 0, board: 0};
       state.transitions = transitions;
       if (state.players && state.players.length === 2) {
@@ -337,8 +337,8 @@ export const connectXSlice = createSlice({
         const db = getDatabase();
         let baseRef = ref(db, '/turnAction/');
         set(baseRef, turnAction.number);
-        baseRef = ref(db, '/nextPlayer/');
-        set(baseRef, state.nextPlayer);
+        baseRef = ref(db, '/currentSign/');
+        set(baseRef, state.currentSign);
         baseRef = ref(db, '/transitions/');
         set(baseRef, transitions);
       }
@@ -346,7 +346,7 @@ export const connectXSlice = createSlice({
 
     changeStep: (state, action) => {
       state.stepNumber = action.payload;
-      state.nextPlayer = state.stepNumber % 2 === 0 ? 'X' : 'O';      
+      state.currentSign = state.stepNumber % 2 === 0 ? 'X' : 'O';      
       state.turnAction = {number:0, action:0};          
       state.transitions = {slots:0, board:0};
     },
@@ -378,7 +378,7 @@ export const connectXSlice = createSlice({
         set(baseRef, history);   
         baseRef = ref(db, '/turnAction/');
         set(baseRef, 0);        
-        baseRef = ref(db, '/nextPlayer/');
+        baseRef = ref(db, '/currentSign/');
         set(baseRef, 'X');      
         baseRef = ref(db, '/transitions/');
         set(baseRef, transitions);
@@ -389,7 +389,7 @@ export const connectXSlice = createSlice({
       }
       state.stepNumber = 0;
       state.history = history;
-      state.nextPlayer = 'X';      
+      state.currentSign = 'X';      
       state.turnAction = {number:0, action:0};      
       state.transitions = transitions;
       state.gravIsOn = true;
@@ -422,7 +422,7 @@ export const connectXSlice = createSlice({
           state.gravIsOn = data.gravIsOn;
           const turnAction = data.turnAction;
           state.turnAction.number = turnAction === actionsPerTurn ? 0 : turnAction;
-          state.nextPlayer = data.nextPlayer;
+          state.currentSign = data.currentSign;
         }
       })
       .addCase(requestGameAsync.pending, (state) => {
@@ -486,7 +486,7 @@ export const selectStepNumber = (state) => state.connectX.stepNumber;
 export const selectSortIsAsc = (state) => state.connectX.sortIsAsc;
 export const selectGravityState = (state) => state.connectX.gravIsOn;
 export const selectTransitions = (state) => state.connectX.transitions;
-export const selectNextPlayer = (state) => state.connectX.nextPlayer;
+export const selectCurrentSign = (state) => state.connectX.currentSign;
 export const selectPlayers = (state) => state.connectX.players;
 export const selectTurnAction = (state) => state.connectX.turnAction;
 
@@ -531,10 +531,7 @@ export const sendGameSettings = (settings) => (dispatch) => {
 
 // CALL TO ASYNC
 export const initPlayers = (players) => (dispatch) => {
-  console.log("hey call to async",players)
-  if (players) {
-    dispatch(initPlayersAsync());
-  }
+  dispatch(initPlayersAsync());
 };
 
 export const requestGame = (pseudo) => (dispatch, getState) => {
@@ -556,10 +553,12 @@ export const requestGame = (pseudo) => (dispatch, getState) => {
   });
 };
 
-export const watchGame = () => (dispatch, getState) => {
+export const watchGame = (mySign) => (dispatch, getState) => {
   const turnData = {turnAction: selectTurnAction(getState()).number, stepNumber: selectStepNumber(getState())};
+  const isMyTurn = mySign === selectCurrentSign(getState()) ? true : false;
+
   const watchTimer = setInterval(() => {
-    if (selectPlayers(getState()).length === 2) {
+    if (!isMyTurn) {
       dispatch(updateStateAsync(turnData));
     } else {
       clearInterval(watchTimer);

@@ -15,7 +15,7 @@ import {
   removePlayers,
 
   selectTurnAction,
-  selectNextPlayer,
+  selectCurrentSign,
   selectPlayers,
   selectTransitions,
   selectGravityState,  
@@ -63,7 +63,8 @@ export function ConnectX(props) {
 
   let playSlotFunc = (i) => dispatch(playSlot(i));
 
-  let currentSign = useSelector(selectNextPlayer);
+  const currentSign = useSelector(selectCurrentSign);
+  console.log("currentSign",currentSign);
   console.log("players",players);
 
   if (players && players.length > 0) {
@@ -87,10 +88,11 @@ export function ConnectX(props) {
       }
   
       if (inGame) {
-        const isMyTurn = myPlayer.sign === currentSign ? true : false;
+        const mySign = myPlayer.sign;
+        const isMyTurn = mySign === currentSign ? true : false;
         console.log(isMyTurn);
         if (!isMyTurn) {
-          dispatch(watchGame());
+          dispatch(watchGame(mySign));
           playSlotFunc = () => {};
           gameControls = disabledGameControls;
         }
@@ -107,7 +109,7 @@ export function ConnectX(props) {
     }
   } else if (players && players.length === 0) {
     console.log("am i crazy", players);
-    dispatch(initPlayers(players));
+    dispatch(initPlayers());
   }
 
   // We want the player to use one of his two actions to fill a slot
