@@ -11,7 +11,8 @@ import {
   watchGame,
   requestGame,
   reset,
-  endTwoPlayersGame,
+  initPlayers,  
+  removePlayers,
 
   selectTurnAction,
   selectNextPlayer,
@@ -46,42 +47,67 @@ export function ConnectX(props) {
   let endTurnButton = null;
   let resetButton = <Reset title="Reset" onClick={() => dispatch(reset())}/>
 
+  let gameControls =
+    <div>
+      <button onClick={() => dispatch(flipBoard(1))}>Flip right</button>
+      <button onClick={() => dispatch(flipBoard(-1))}>Flip left</button>
+      <Switch isOn={!useSelector(selectGravityState)} onClick={() => dispatch(toggleGravity({toggle:true}))}/>
+    </div>;
+
+  const disabledGameControls =
+    <div>
+      <button className={styles.disabled} onClick={() => {}}>Flip right</button>
+      <button className={styles.disabled} onClick={() => {}}>Flip left</button>
+      <Switch className={styles.disabled} isOn={!useSelector(selectGravityState)} onClick={() => {}}/>
+    </div>;
+
   let playSlotFunc = (i) => dispatch(playSlot(i));
-  let toggleGravityFunc = () => dispatch(toggleGravity({toggle:true}));
-  let flipBoardR = () => dispatch(flipBoard(1));
-  let flipBoardL = () => dispatch(flipBoard(-1));
 
   let player = useSelector(selectNextPlayer);
+  console.log("players",players);
 
-  if (players.length > 0) {
+  if (players && players.length > 0) {
+    const playerCount = players.length;
+    console.log("playerCount",playerCount);
+
     const myPlayer = players.find(e => e.pseudo === pseudo);
-    const isPlayer = myPlayer !== -1;
-    const gameInProgress = players.length === 2 && !isPlayer;
-    const waitingForGame = players.length === 1 && isPlayer;
-    const inGame = players.length === 2 && isPlayer;
+    const isPlayer = myPlayer !== undefined;
+    console.log("myplayer",myPlayer);
 
-    if (waitingForGame || inGame) {
-      window.onunload = function(event) {
-        dispatch(endTwoPlayersGame());
-      };
-      gameSettingsForm = null;
-    }
-    if (gameInProgress || isPlayer) {
-      requestGameButton = null
-    }
-
-    if (inGame) {
-      resetButton = null;
-      const isMyTurn = myPlayer.sign === player ? true : false;
-      console.log(isMyTurn);
-      if (!isMyTurn) {
-        dispatch(watchGame());
-        playSlotFunc = () => {};
-        toggleGravityFunc = () => {};
-        flipBoardR = () => {};
-        flipBoardL = () => {};
+    if (isPlayer) {
+      const waitingForGame = playerCount === 1;
+      const inGame = playerCount === 2;
+  
+      if (waitingForGame || inGame) {
+        console.log("waitingForGame",waitingForGame);
+        window.onunload = function(event) {
+          dispatch(removePlayers());
+        };
+        requestGameButton = null;
+      }
+  
+      if (inGame) {
+        const isMyTurn = myPlayer.sign === player ? true : false;
+        console.log(isMyTurn);
+        if (!isMyTurn) {
+          dispatch(watchGame());
+          playSlotFunc = () => {};
+          gameControls = disabledGameControls;
+        }
+        gameSettingsForm = null;
+        resetButton = null;
+      }
+    } else {
+      const gameInProgress = playerCount === 2;
+      const opponentWaiting = playerCount === 1;
+  
+      if (gameInProgress || isPlayer) {
+        requestGameButton = null;
       }
     }
+  } else if (players && players.length === 0) {
+    console.log("am i crazy", players);
+    dispatch(initPlayers(players));
   }
 
   // We want the player to use one of his two actions to fill a slot
@@ -91,9 +117,7 @@ export function ConnectX(props) {
       playSlotFunc = () => {};
       endTurnButton = <button onClick={() => dispatch(endTurn())}>End turn</button>
     } else {
-      toggleGravityFunc = () => {};
-      flipBoardR = () => {};
-      flipBoardL = () => {};
+      gameControls = disabledGameControls;
     }
   }
 
@@ -174,10 +198,8 @@ export function ConnectX(props) {
         <div className={styles.status}>{status}</div>
         <div className={styles.controls}>
           {requestGameButton}
-          <button onClick={() => flipBoardR()}>Flip right</button>
-          <button onClick={() => flipBoardL()}>Flip left</button>
+          {gameControls}
           <Switch isOn={!sortIsAsc} onClick={() => dispatch(toggleSort())}/>
-          <Switch isOn={!useSelector(selectGravityState)} onClick={() => toggleGravityFunc()}/>
           {endTurnButton}
           {resetButton}
         </div>

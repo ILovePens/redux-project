@@ -1,5 +1,20 @@
 import { getDatabase, ref, get} from "firebase/database";
 
+export function readPlayers() {
+	const db = getDatabase();
+  return new Promise((resolve) => {  	
+		get(ref(db, `/players`)).then((players) => {
+			if (players.exists()) {
+				resolve(players.val());    
+		  } else {
+		    console.log("No data available");
+		  }
+		}).catch((error) => {
+		  console.error(error);
+		});
+  });
+}
+
 export function compareGameState(turnAction) {
 	const db = getDatabase();
   return new Promise((resolve) => {
@@ -25,7 +40,7 @@ export function compareGameState(turnAction) {
 	});
 }
 
-export function readPlayers() {
+export function readGamePlayers() {
 	const db = getDatabase();
   return new Promise((resolve) => {  	
 		get(ref(db, `/players`)).then((players) => {

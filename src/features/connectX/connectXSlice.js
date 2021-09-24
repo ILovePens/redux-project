@@ -1,7 +1,8 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { getDatabase, ref, set, push, remove } from "firebase/database";
 import '../../base';
-import { compareGameState,  readPlayers} from './connectXAPI';
+import { loadState } from '../../localStorage';
+import { compareGameState,  readGamePlayers, readPlayers} from './connectXAPI';
 
 const initialState = {
   history: [{
@@ -24,6 +25,21 @@ const initialState = {
 
 const actionsPerTurn = 2;
 
+export const initPlayersAsync = createAsyncThunk(
+  'connectX/readPlayers',
+  async (arg, thunkAPI) => {
+    let response = await readPlayers();
+    if (!response) response = [];
+    const playerCount = Object.keys(response).length;    
+    if (playerCount > 2) {
+      thunkAPI.dispatch(removePlayers());
+      thunkAPI.dispatch(requestGame(loadState()));
+      response = [];
+    }
+    return response;
+  }
+);
+
 export const updateStateAsync = createAsyncThunk(
   'connectX/compareGameState',
   async (stepNumber) => {
@@ -33,12 +49,15 @@ export const updateStateAsync = createAsyncThunk(
 );
 
 export const requestGameAsync = createAsyncThunk(
-  'connectX/readPlayers',
+  'connectX/readGamePlayers',
   async (arg, thunkAPI) => {
-    const response = await readPlayers();
+    const response = await readGamePlayers();
     let players = response.players;
     const playerCount = Object.keys(players).length;
-    if (playerCount === 2) {
+
+    if (playerCount === 1) {
+      set(ref(getDatabase(), '/gameIsOn/'), false);  
+    } else if (playerCount === 2) {
       if (response.gameIsOn) {
         thunkAPI.dispatch(reset(false));
       } else {
@@ -46,8 +65,9 @@ export const requestGameAsync = createAsyncThunk(
       }
     }
     if (playerCount > 2) {
-      thunkAPI.dispatch(endTwoPlayersGame());
-      players = []
+      thunkAPI.dispatch(removePlayers());
+      thunkAPI.dispatch(requestGame(loadState()));
+      players = [];
     } 
     return players;
   }
@@ -88,7 +108,7 @@ export const connectXSlice = createSlice({
       history = history.slice(0, stepNumber);      
       state.history = history.concat([{slots: slots, boardFlip: current.boardFlip}]);
       if (gravIsOff) state.transitions = {slots:0, board:0};
-      if (state.players.length === 2 && gravIsOff) {
+      if (state.players && state.players.length === 2 && gravIsOff) {
         console.log("set db fillSlot");
         const db = getDatabase();
         let baseRef = ref(db, `/history/${stepNumber}`);
@@ -196,7 +216,7 @@ export const connectXSlice = createSlice({
       // If the toggle was called with a click, we clear the board transition,
       // if the gravity is turned off, we clear the slots transitions
       state.transitions = {slots: gravIsOn ? hasTransitions ? transitions : 0 : 0, board: isAction ? 0 : turnAction.action !== 3 ? 0 : state.transitions.board};
-      if (state.players.length === 2) {  
+      if (state.players && state.players.length === 2) {  
         console.log("set db toggleGravity"); 
         const db = getDatabase();      
         let baseRef = ref(db, '/gravIsOn/');
@@ -273,7 +293,7 @@ export const connectXSlice = createSlice({
       state.history = history.concat([{slots: newSlots, boardFlip: boardFlip}]);
       state.transitions = {slots: 0, board: flipValue * -90};
 
-      if (state.players.length === 2 && gravIsOff) {
+      if (state.players && state.players.length === 2 && gravIsOff) {
         console.log("set db flipBoard");
         const db = getDatabase();
         let baseRef = ref(db, `/history/${stepNumber}`);
@@ -297,11 +317,11 @@ export const connectXSlice = createSlice({
       state.nextPlayer = state.nextPlayer === 'X' ? 'O' : 'X';
       const transitions = {slots: 0, board: 0};
       state.transitions = transitions;
-      if (state.players.length === 2) {
+      if (state.players && state.players.length === 2) {
         console.log("set db endTurn");
         const db = getDatabase();
         let baseRef = ref(db, '/turnAction/');
-        set(baseRef, turnAction);
+        set(baseRef, turnAction.number);
         baseRef = ref(db, '/nextPlayer/');
         set(baseRef, state.nextPlayer);
         baseRef = ref(db, '/transitions/');
@@ -340,7 +360,9 @@ export const connectXSlice = createSlice({
         let baseRef = ref(db, '/stepNumber/');
         set(baseRef, 0);
         baseRef = ref(db, '/history/');
-        set(baseRef, history);      
+        set(baseRef, history);   
+        baseRef = ref(db, '/turnAction/');
+        set(baseRef, 0);        
         baseRef = ref(db, '/nextPlayer/');
         set(baseRef, 'X');      
         baseRef = ref(db, '/transitions/');
@@ -358,11 +380,10 @@ export const connectXSlice = createSlice({
       state.gravIsOn = true;
     },
 
-    endTwoPlayersGame: (state) => {
+    removePlayers: (state) => {
+      // As this is called on window.onunload, we only have time for one call to be made
       const db = getDatabase();
-      set(ref(db, 'gameIsOn'), false).then(() => {
-        remove(ref(db, '/players/'));
-      });
+      set(ref(db, '/players/'),0);
     }
   },
 
@@ -397,15 +418,33 @@ export const connectXSlice = createSlice({
         const playersRefs = Object.keys(players);
 
         if(playersRefs.length === 0) {
-          state.players = [];
-          window.alert('There was an issue, please try again!');          
-        } else if(playersRefs.length === 1) {
+          // state.players = [];
+          // window.alert('There was an issue, please try again!');          
+        } else if(playersRefs.length === 1) {  
           state.players = [{pseudo: players[playersRefs[0]].pseudo, sign: 'O'}];
           state.transitions = {slots:0, board:0};
         } else if (playersRefs.length === 2) {
           state.players = [{pseudo: players[playersRefs[0]].pseudo, sign: 'O'},
                            {pseudo: players[playersRefs[1]].pseudo, sign: 'X'}];          
         }
+      })
+      .addCase(initPlayersAsync.pending, (state) => {
+        console.log("initPlayersAsync pending");
+      })      
+      .addCase(initPlayersAsync.fulfilled, (state, action) => {
+        const players = action.payload;
+        console.log("initPlayersAsync",players);
+        const playersRefs = Object.keys(players);
+
+        if(playersRefs.length === 0) {
+          state.players = null;     
+        } else if(playersRefs.length === 1) {  
+          state.players = [{pseudo: players[playersRefs[0]].pseudo, sign: 'O'}];
+        } else if (playersRefs.length === 2) {
+          state.players = [{pseudo: players[playersRefs[0]].pseudo, sign: 'O'},
+                           {pseudo: players[playersRefs[1]].pseudo, sign: 'X'}];          
+        }
+
       });
   }  
 });
@@ -419,7 +458,7 @@ export const {
   endTurn,
   setGameSettings,
   reset,
-  endTwoPlayersGame,
+  removePlayers,
 } = connectXSlice.actions;
 
 // The function below is called a selector and allows us to select a value from
@@ -474,6 +513,14 @@ export const sendGameSettings = (settings) => (dispatch) => {
   dispatch(setGameSettings(settings));
 };
 
+// CALL TO ASYNC
+export const initPlayers = (players) => (dispatch) => {
+  console.log("hey call to async",players)
+  if (players) {
+    dispatch(initPlayersAsync());
+  }
+};
+
 export const requestGame = (pseudo) => (dispatch, getState) => {
   set(push(ref(getDatabase(), 'players')), {
     pseudo
@@ -495,12 +542,12 @@ export const requestGame = (pseudo) => (dispatch, getState) => {
 
 export const watchGame = () => (dispatch, getState) => {
     const watchTimer = setInterval(() => {
-      if (!selectPlayers(getState()).length) {
-        dispatch(updateStateAsync(selectTurnAction(getState())));
+      if (selectPlayers(getState()).length === 2) {
+        dispatch(updateStateAsync(selectTurnAction(getState()).number));
       } else {
         clearInterval(watchTimer);
       }    
     }, 4000);
-};  
+};    
 
 export default connectXSlice.reducer;
