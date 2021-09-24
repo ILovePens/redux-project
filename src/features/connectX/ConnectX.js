@@ -63,7 +63,7 @@ export function ConnectX(props) {
 
   let playSlotFunc = (i) => dispatch(playSlot(i));
 
-  let player = useSelector(selectNextPlayer);
+  let currentSign = useSelector(selectNextPlayer);
   console.log("players",players);
 
   if (players && players.length > 0) {
@@ -87,7 +87,7 @@ export function ConnectX(props) {
       }
   
       if (inGame) {
-        const isMyTurn = myPlayer.sign === player ? true : false;
+        const isMyTurn = myPlayer.sign === currentSign ? true : false;
         console.log(isMyTurn);
         if (!isMyTurn) {
           dispatch(watchGame());
@@ -180,7 +180,7 @@ export function ConnectX(props) {
   } /*else if (turnAction.action === 1) {
     status = 'Next player: ' + player === 'X' ? 'O' : 'X'
   } */else {
-    status = 'Next player: ' + player
+    status = 'Next player: ' + currentSign
   }
   return (
     <div className={styles.game}>

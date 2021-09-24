@@ -42,8 +42,8 @@ export const initPlayersAsync = createAsyncThunk(
 
 export const updateStateAsync = createAsyncThunk(
   'connectX/compareGameState',
-  async (stepNumber) => {
-    const response = await compareGameState(stepNumber);
+  async (turnData) => {
+    const response = await compareGameState(turnData);
     return response;
   }
 );
@@ -108,24 +108,26 @@ export const connectXSlice = createSlice({
       // We add the current board to the history, and assign the stepNumber based on the new history
       history = history.slice(0, stepNumber);      
       state.history = history.concat([{slots: slots, boardFlip: current.boardFlip}]);
-      if (gravIsOff) state.transitions = {slots:0, board:0};
-      if (state.players && state.players.length === 2 && gravIsOff) {
+
+      if (state.players && state.players.length === 2) {
         console.log("set db fillSlot");
         const db = getDatabase();
-        let baseRef = ref(db, `/history/${stepNumber}`);
-        set(baseRef, {slots: slots, boardFlip: current.boardFlip});
+        let baseRef = ref(db, '/stepNumber/');
         if (startOfTurn) {
-          baseRef = ref(db, '/stepNumber/');
           set(baseRef, stepNumber);
         }
-        if (isEndTurn) {
-          baseRef = ref(db, '/nextPlayer/');
-          set(baseRef, state.nextPlayer);        
+        if (gravIsOff) {
+          baseRef = ref(db, `/history/${stepNumber}`);
+          set(baseRef, {slots: slots, boardFlip: current.boardFlip});
+          if (isEndTurn) {
+            baseRef = ref(db, '/nextPlayer/');
+            set(baseRef, state.nextPlayer);        
+          }
+          baseRef = ref(db, '/turnAction/');
+          set(baseRef, state.turnAction.number);
+          baseRef = ref(db, '/transitions/');
+          set(baseRef, {slots:0, board:0});        
         }
-        baseRef = ref(db, '/turnAction/');
-        set(baseRef, state.turnAction.number);
-        baseRef = ref(db, '/transitions/');
-        set(baseRef, state.transitions);        
       }
     },
 
@@ -148,8 +150,8 @@ export const connectXSlice = createSlice({
       } else {
         isEndTurn = turnAction.number === actionsPerTurn
       }
-      const gravIsOn = state.gravIsOn;
 
+      const gravIsOn = state.gravIsOn;
       if (gravIsOn) {
         let width = state.gameSettings.width,
             height = state.gameSettings.height;
@@ -200,7 +202,8 @@ export const connectXSlice = createSlice({
           count++;
         }
       }
-      const startOfTurn = startOfTurn;
+
+      const startOfTurn = !turnAction.action;
       if (startOfTurn) stepNumber++;
       state.stepNumber = stepNumber;
       if (isEndTurn) {
@@ -221,9 +224,11 @@ export const connectXSlice = createSlice({
       state.transitions = {slots: gravIsOn ? hasTransitions ? transitions : 0 : 0, board: isAction ? 0 : turnAction.action !== 3 ? 0 : state.transitions.board};
       if (state.players && state.players.length === 2) {  
         console.log("set db toggleGravity"); 
-        const db = getDatabase();      
+        const db = getDatabase();    
         let baseRef = ref(db, '/gravIsOn/');
-        set(baseRef, gravIsOn);
+        if (isAction) {
+          set(baseRef, gravIsOn);
+        }
         baseRef = ref(db, `/history/${stepNumber}`);
         set(baseRef, {slots: slots, boardFlip: current.boardFlip});
         if (startOfTurn) {
@@ -299,23 +304,25 @@ export const connectXSlice = createSlice({
       state.history = history.concat([{slots: newSlots, boardFlip: boardFlip}]);
       state.transitions = {slots: 0, board: flipValue * -90};
 
-      if (state.players && state.players.length === 2 && gravIsOff) {
+      if (state.players && state.players.length === 2) {
         console.log("set db flipBoard");
         const db = getDatabase();
-        let baseRef = ref(db, `/history/${stepNumber}`);
-        set(baseRef, {slots: newSlots, boardFlip: boardFlip});
+        let baseRef = ref(db, '/stepNumber/');
         if (startOfTurn) {
-          baseRef = ref(db, '/stepNumber/');
           set(baseRef, stepNumber);
         }
-        if (isEndTurn) {
-          baseRef = ref(db, '/nextPlayer/');
-          set(baseRef, state.nextPlayer);
-        }          
-        baseRef = ref(db, '/turnAction/');
-        set(baseRef, state.turnAction.number);        
-        baseRef = ref(db, '/transitions/');
-        set(baseRef, state.transitions);
+        if (gravIsOff) {
+          baseRef = ref(db, `/history/${stepNumber}`);
+          set(baseRef, {slots: slots, boardFlip: current.boardFlip});
+          if (isEndTurn) {
+            baseRef = ref(db, '/nextPlayer/');
+            set(baseRef, state.nextPlayer);        
+          }
+          baseRef = ref(db, '/turnAction/');
+          set(baseRef, state.turnAction.number);
+          baseRef = ref(db, '/transitions/');
+          set(baseRef, state.transitions);        
+        }
       } 
     },
 
@@ -404,7 +411,7 @@ export const connectXSlice = createSlice({
         const data = action.payload;
         console.log("updateStateAsync",data);
 
-        if (data === null) {
+        if (data === 0) {
           window.alert('Your opponent left! Reload the page to exit the current game');
           state.players = [];
         } else {
@@ -415,6 +422,7 @@ export const connectXSlice = createSlice({
           state.gravIsOn = data.gravIsOn;
           const turnAction = data.turnAction;
           state.turnAction.number = turnAction === actionsPerTurn ? 0 : turnAction;
+          state.nextPlayer = data.nextPlayer;
         }
       })
       .addCase(requestGameAsync.pending, (state) => {
