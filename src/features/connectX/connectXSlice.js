@@ -16,6 +16,7 @@ const initialState = {
     height: 6,
     scoreTarget: 4 
   },
+  status: '',
   currentSign: 'X',
   sortIsAsc: true,
   gravIsOn: true,
@@ -364,7 +365,9 @@ export const connectXSlice = createSlice({
         boardFlip: 0
       }];
     },
-
+    setStatus: (state, action) => {
+      state.status = action.payload;
+    },
     reset: (state, action) => {
       const isDbReset = action.payload;
       const history = state.history.slice(0,1);
@@ -472,6 +475,7 @@ export const {
   toggleGravity,
   flipBoardState,
   endTurn,
+  setStatus,
   setGameSettings,
   reset,
   removePlayers,
@@ -488,6 +492,7 @@ export const selectGravityState = (state) => state.connectX.gravIsOn;
 export const selectTransitions = (state) => state.connectX.transitions;
 export const selectCurrentSign = (state) => state.connectX.currentSign;
 export const selectPlayers = (state) => state.connectX.players;
+export const selectStatus = (state) => state.connectX.status;
 export const selectTurnAction = (state) => state.connectX.turnAction;
 
 
@@ -557,13 +562,18 @@ export const watchGame = (mySign) => (dispatch, getState) => {
   const turnData = {turnAction: selectTurnAction(getState()).number, stepNumber: selectStepNumber(getState())};
   const isMyTurn = mySign === selectCurrentSign(getState()) ? true : false;
 
-  const watchTimer = setInterval(() => {
-    if (!isMyTurn) {
-      dispatch(updateStateAsync(turnData));
-    } else {
-      clearInterval(watchTimer);
-    }    
-  }, 4000);
+  // Genius move
+  if (selectStatus(getState()) !== 'watching') {
+    const watchTimer = setInterval(() => {
+      if (!isMyTurn) {
+        dispatch(updateStateAsync(turnData));
+      } else {
+        clearInterval(watchTimer);
+      }    
+    }, 4000);
+  }
+
+  dispatch(setStatus('watching'));
 };    
 
 export default connectXSlice.reducer;
