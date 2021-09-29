@@ -84,7 +84,6 @@ export function ConnectX(props) {
         window.onunload = function(event) {
           dispatch(removePlayers());
         };
-        requestGameButton = null;
       }
   
       if (inGame) {
@@ -99,12 +98,18 @@ export function ConnectX(props) {
         gameSettingsForm = null;
         resetButton = null;
       }
+      
+      requestGameButton = null;
+
     } else {
       const gameInProgress = playerCount === 2;
       const opponentWaiting = playerCount === 1;
   
-      if (gameInProgress || isPlayer) {
+      if (gameInProgress) {
         requestGameButton = null;
+      }
+      if (opponentWaiting) {
+        requestGameButton = <button className={styles.highlighted} onClick={() => dispatch(requestGame(pseudo))}>Join game</button>;
       }
     }
   } else if (players && players.length === 0) {

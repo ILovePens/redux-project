@@ -126,6 +126,13 @@
   margin-right: 24px;
 }
 
+.highlighted {
+  color: #fff;
+  background: rgb(252,157,20);
+  background: linear-gradient(9deg, rgba(252,157,20,1) 6%, rgba(217,62,10,1) 80%);
+  box-shadow: 0 0 10px rgba(234,110,15,0.6);
+}
+
 .selected {
   box-shadow: 0 0 10px rgba(0,0,0,0.3);
 }

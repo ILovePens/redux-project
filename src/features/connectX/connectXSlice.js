@@ -1,8 +1,8 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import { getDatabase, ref, set, push, remove } from "firebase/database";
+import { getDatabase, ref, set, push } from "firebase/database";
 import '../../base';
 import { loadState } from '../../localStorage';
-import { compareGameState,  readGamePlayers, readPlayers} from './connectXAPI';
+import { compareGameState,  readGameState } from './connectXAPI';
 
 const initialState = {
   history: [{
@@ -16,7 +16,7 @@ const initialState = {
     height: 6,
     scoreTarget: 4 
   },
-  status: '',
+  asyncStatus: '',
   currentSign: 'X',
   sortIsAsc: true,
   gravIsOn: true,
@@ -26,21 +26,6 @@ const initialState = {
 
 const actionsPerTurn = 2;
 
-export const initPlayersAsync = createAsyncThunk(
-  'connectX/readPlayers',
-  async (arg, thunkAPI) => {
-    let response = await readPlayers();
-    if (!response) response = [];
-    const playerCount = Object.keys(response).length;    
-    if (playerCount > 2) {
-      thunkAPI.dispatch(removePlayers());
-      thunkAPI.dispatch(requestGame(loadState()));
-      response = [];
-    }
-    return response;
-  }
-);
-
 export const updateStateAsync = createAsyncThunk(
   'connectX/compareGameState',
   async (turnData) => {
@@ -49,27 +34,31 @@ export const updateStateAsync = createAsyncThunk(
   }
 );
 
-export const requestGameAsync = createAsyncThunk(
-  'connectX/readGamePlayers',
-  async (arg, thunkAPI) => {
-    const response = await readGamePlayers();
+export const setGameStateAsync = createAsyncThunk(
+  'connectX/readGameState',
+  async (isInit, thunkAPI) => {
+    const response = await readGameState(isInit);
     let players = response.players;
-    const playerCount = Object.keys(players).length;
+    if (isInit) {
+      if (!players) players = [];
+    } else {
+      const playerCount = Object.keys(players).length;
 
-    if (playerCount === 1) {
-      set(ref(getDatabase(), '/gameIsOn/'), false);  
-    } else if (playerCount === 2) {
-      if (response.gameIsOn) {
-        thunkAPI.dispatch(reset(false));
-      } else {
-        thunkAPI.dispatch(reset(true));
+      if (playerCount === 1) {
+        set(ref(getDatabase(), '/gameIsOn/'), false);  
+      } else if (playerCount === 2) {
+        if (response.gameIsOn) {
+          thunkAPI.dispatch(sendGameSettings(response.gameSettings));
+        } else {
+          thunkAPI.dispatch(reset(true));
+        }
       }
+      if (playerCount > 2) {
+        thunkAPI.dispatch(removePlayers());
+        thunkAPI.dispatch(requestGame(loadState()));
+        players = [];
+      } 
     }
-    if (playerCount > 2) {
-      thunkAPI.dispatch(removePlayers());
-      thunkAPI.dispatch(requestGame(loadState()));
-      players = [];
-    } 
     return players;
   }
 );
@@ -365,8 +354,8 @@ export const connectXSlice = createSlice({
         boardFlip: 0
       }];
     },
-    setStatus: (state, action) => {
-      state.status = action.payload;
+    setAsyncStatus: (state, action) => {
+      state.asyncStatus = action.payload;
     },
     reset: (state, action) => {
       const isDbReset = action.payload;
@@ -377,6 +366,8 @@ export const connectXSlice = createSlice({
         const db = getDatabase();
         let baseRef = ref(db, '/stepNumber/');
         set(baseRef, 0);
+        baseRef = ref(db, '/gameSettings/');
+        set(baseRef, state.gameSettings);        
         baseRef = ref(db, '/history/');
         set(baseRef, history);   
         baseRef = ref(db, '/turnAction/');
@@ -399,7 +390,7 @@ export const connectXSlice = createSlice({
     },
 
     removePlayers: (state) => {
-      // As this is called on window.onunload, we only have time for one call to be made
+      // As this is called on window.onunload, we only have time for one API call to be made
       const db = getDatabase();
       set(ref(db, '/players/'),0);
     }
@@ -417,6 +408,7 @@ export const connectXSlice = createSlice({
         if (data === 0) {
           window.alert('Your opponent left! Reload the page to exit the current game');
           state.players = [];
+          state.asyncStatus = '';
         } else {
           state.history = data.history;
           state.stepNumber = data.stepNumber;
@@ -425,19 +417,20 @@ export const connectXSlice = createSlice({
           state.gravIsOn = data.gravIsOn;
           const turnAction = data.turnAction;
           state.turnAction.number = turnAction === actionsPerTurn ? 0 : turnAction;
+          state.asyncStatus = state.currentSign === data.currentSign ? 'watching' : '';
           state.currentSign = data.currentSign;
         }
       })
-      .addCase(requestGameAsync.pending, (state) => {
-        console.log("requestGameAsync pending");
+      .addCase(setGameStateAsync.pending, (state) => {
+        console.log("setGameStateAsync pending");
       })      
-      .addCase(requestGameAsync.fulfilled, (state, action) => {
+      .addCase(setGameStateAsync.fulfilled, (state, action) => {
         const players = action.payload;
-        console.log("requestGameAsync",players);
+        console.log("setGameStateAsync",players);
         const playersRefs = Object.keys(players);
 
         if(playersRefs.length === 0) {
-          // state.players = [];
+          state.players = null;
           // window.alert('There was an issue, please try again!');          
         } else if(playersRefs.length === 1) {  
           state.players = [{pseudo: players[playersRefs[0]].pseudo, sign: 'O'}];
@@ -446,24 +439,6 @@ export const connectXSlice = createSlice({
           state.players = [{pseudo: players[playersRefs[0]].pseudo, sign: 'O'},
                            {pseudo: players[playersRefs[1]].pseudo, sign: 'X'}];          
         }
-      })
-      .addCase(initPlayersAsync.pending, (state) => {
-        console.log("initPlayersAsync pending");
-      })      
-      .addCase(initPlayersAsync.fulfilled, (state, action) => {
-        const players = action.payload;
-        console.log("initPlayersAsync",players);
-        const playersRefs = Object.keys(players);
-
-        if(playersRefs.length === 0) {
-          state.players = null;     
-        } else if(playersRefs.length === 1) {  
-          state.players = [{pseudo: players[playersRefs[0]].pseudo, sign: 'O'}];
-        } else if (playersRefs.length === 2) {
-          state.players = [{pseudo: players[playersRefs[0]].pseudo, sign: 'O'},
-                           {pseudo: players[playersRefs[1]].pseudo, sign: 'X'}];          
-        }
-
       });
   }  
 });
@@ -475,7 +450,7 @@ export const {
   toggleGravity,
   flipBoardState,
   endTurn,
-  setStatus,
+  setAsyncStatus,
   setGameSettings,
   reset,
   removePlayers,
@@ -492,7 +467,7 @@ export const selectGravityState = (state) => state.connectX.gravIsOn;
 export const selectTransitions = (state) => state.connectX.transitions;
 export const selectCurrentSign = (state) => state.connectX.currentSign;
 export const selectPlayers = (state) => state.connectX.players;
-export const selectStatus = (state) => state.connectX.status;
+export const selectAsyncStatus = (state) => state.connectX.asyncStatus;
 export const selectTurnAction = (state) => state.connectX.turnAction;
 
 
@@ -535,8 +510,8 @@ export const sendGameSettings = (settings) => (dispatch) => {
 };
 
 // CALL TO ASYNC
-export const initPlayers = (players) => (dispatch) => {
-  dispatch(initPlayersAsync());
+export const initPlayers = () => (dispatch) => {
+  dispatch(setGameStateAsync(true));
 };
 
 export const requestGame = (pseudo) => (dispatch, getState) => {
@@ -544,10 +519,10 @@ export const requestGame = (pseudo) => (dispatch, getState) => {
     pseudo
   })
   .then(() => {
-    dispatch(requestGameAsync());
+    dispatch(setGameStateAsync(false));
     const watchTimer = setInterval(() => {
       if (selectPlayers(getState()).length < 2) {
-        dispatch(requestGameAsync());
+        dispatch(setGameStateAsync(false));
       } else {
         clearInterval(watchTimer);
       }
@@ -559,21 +534,21 @@ export const requestGame = (pseudo) => (dispatch, getState) => {
 };
 
 export const watchGame = (mySign) => (dispatch, getState) => {
-  const turnData = {turnAction: selectTurnAction(getState()).number, stepNumber: selectStepNumber(getState())};
-  const isMyTurn = mySign === selectCurrentSign(getState()) ? true : false;
 
   // Genius move
-  if (selectStatus(getState()) !== 'watching') {
+  if (selectAsyncStatus(getState()) !== 'watching') {
+
     const watchTimer = setInterval(() => {
-      if (!isMyTurn) {
-        dispatch(updateStateAsync(turnData));
-      } else {
+      const turnData = {turnAction: selectTurnAction(getState()).number, stepNumber: selectStepNumber(getState())};
+      if (mySign === selectCurrentSign(getState())) {
         clearInterval(watchTimer);
+      } else {
+        dispatch(updateStateAsync(turnData));
       }    
     }, 4000);
   }
 
-  dispatch(setStatus('watching'));
+  dispatch(setAsyncStatus('watching'));
 };    
 
 export default connectXSlice.reducer;

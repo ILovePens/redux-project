@@ -32,6 +32,14 @@ export function compareGameState(turnData) {
 					    }).catch((error) => {
 							  console.error(error);
 							});
+				    } else {
+					    get(ref(db, `/players`)).then((readPlayers) => {
+								if (readPlayers.exists() && readPlayers.val() === 0) {
+			        		resolve(0);
+							  }
+					    }).catch((error) => {
+							  console.error(error);
+							});
 				    }
 				  } else {
 				    console.log("No data available");
@@ -48,20 +56,32 @@ export function compareGameState(turnData) {
 	});
 }
 
-export function readGamePlayers() {
+export function readGameState(isInit) {
 	const db = getDatabase();
   return new Promise((resolve) => {  	
 		get(ref(db, `/players`)).then((players) => {
 			if (players.exists()) {
-				get(ref(db, `/gameIsOn`)).then((snapshot) => {
-					if (snapshot.exists()) {
-				    resolve({players: players.val(), gameIsOn: snapshot.val()});
-				  } else {
-				    console.log("No data available");
-				  }
-				}).catch((error) => {
-				  console.error(error);
-				});		    
+				if (isInit) {
+					resolve({players: players.val()});
+				} else {
+					get(ref(db, `/gameSettings`)).then((gameSettings) => {
+						if (gameSettings.exists()) {
+							get(ref(db, `/gameIsOn`)).then((snapshot) => {
+								if (snapshot.exists()) {
+							    resolve({players: players.val(), gameSettings: gameSettings.val(), gameIsOn: snapshot.val()});
+							  } else {
+							    console.log("No data available");
+							  }
+							}).catch((error) => {
+							  console.error(error);
+							});		    
+					  } else {
+					    console.log("No data available");
+					  }
+					}).catch((error) => {
+					  console.error(error);
+					});					
+				}
 		  } else {
 		    console.log("No data available");
 		  }
