@@ -1,12 +1,12 @@
 import React from 'react';
-import { saveState } from '../localStorage';
+import { saveSessionItems } from '../localStorage';
 import history from '../history';
 class Connexion extends React.Component {
 	goToApp = event => {
 		event.preventDefault();
 		console.log(this);
 		const pseudo = this.pseudoInput.value;
-		saveState(pseudo);
+		saveSessionItems({pseudo:pseudo, stamp:(+new Date()).toString(36)});
 		history.push(`/redux-project/`);
 	};
 

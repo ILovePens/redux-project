@@ -1,21 +1,21 @@
 
-export const loadState = () => {
+export const loadSessionItems = () => {
 	try{
-		const serializedState = localStorage.getItem('state');
-		if(serializedState === null){
+		const serializedItems = sessionStorage.getItem('playerInfos');
+		if(serializedItems === null){
 			return undefined;
 		}
 
-		return JSON.parse(serializedState)
+		return JSON.parse(serializedItems)
 	} catch (err) {
 		return undefined;
 	}
 }
 
-export const saveState = (state) => {
+export const saveSessionItems = (items) => {
 	try{
-		const serializedState = JSON.stringify(state)
-		localStorage.setItem('state', serializedState);
+		const serializedItems = JSON.stringify(items)
+		sessionStorage.setItem('playerInfos', serializedItems);
 	} catch (err) {
 		console.log(err)
 	}

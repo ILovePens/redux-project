@@ -1,7 +1,7 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { getDatabase, ref, set, push } from "firebase/database";
 import '../../base';
-import { loadState } from '../../localStorage';
+import { loadSessionItems } from '../../localStorage';
 import { compareGameState,  readGameState } from './connectXAPI';
 
 const initialState = {
@@ -21,7 +21,7 @@ const initialState = {
   sortIsAsc: true,
   gravIsOn: true,
   transitions: {slots:0, board:0},
-  players: [],
+  players: null,
 };
 
 const actionsPerTurn = 2;
@@ -45,7 +45,7 @@ export const setGameStateAsync = createAsyncThunk(
       const playerCount = Object.keys(players).length;
 
       if (playerCount === 1) {
-        set(ref(getDatabase(), '/gameIsOn/'), false);  
+        set(ref(getDatabase(), '/gameIsOn/'), false);
       } else if (playerCount === 2) {
         if (response.gameIsOn) {
           thunkAPI.dispatch(sendGameSettings(response.gameSettings));
@@ -55,7 +55,7 @@ export const setGameStateAsync = createAsyncThunk(
       }
       if (playerCount > 2) {
         thunkAPI.dispatch(removePlayers());
-        thunkAPI.dispatch(requestGame(loadState()));
+        thunkAPI.dispatch(requestGame(loadSessionItems()));
         players = [];
       } 
     }
@@ -407,7 +407,7 @@ export const connectXSlice = createSlice({
 
         if (data === 0) {
           window.alert('Your opponent left! Reload the page to exit the current game');
-          state.players = [];
+          state.players = null;
           state.asyncStatus = '';
         } else {
           state.history = data.history;
@@ -430,14 +430,19 @@ export const connectXSlice = createSlice({
         const playersRefs = Object.keys(players);
 
         if(playersRefs.length === 0) {
-          state.players = null;
+          state.players = [];
           // window.alert('There was an issue, please try again!');          
-        } else if(playersRefs.length === 1) {  
-          state.players = [{pseudo: players[playersRefs[0]].pseudo, sign: 'O'}];
-          state.transitions = {slots:0, board:0};
+        } else if(playersRefs.length === 1) {
+          // const players[playersRefs[0]] = players[playersRefs[0]];
+          if (state.players.length === 0) {
+            state.players = [{pseudo: players[playersRefs[0]].pseudo, sign: 'O', ref: players[playersRefs[0]].stamp}];
+            state.transitions = {slots:0, board:0};
+          }
         } else if (playersRefs.length === 2) {
-          state.players = [{pseudo: players[playersRefs[0]].pseudo, sign: 'O'},
-                           {pseudo: players[playersRefs[1]].pseudo, sign: 'X'}];          
+          // const players[playersRefs[0]] = players[playersRefs[0]];
+          // const players[playersRefs[1]] = players[playersRefs[1]];
+          state.players = [{pseudo: players[playersRefs[0]].pseudo, sign: 'O', ref: players[playersRefs[0]].stamp},
+                           {pseudo: players[playersRefs[1]].pseudo, sign: 'X', ref: players[playersRefs[1]].stamp}];          
         }
       });
   }  
@@ -514,9 +519,11 @@ export const initPlayers = () => (dispatch) => {
   dispatch(setGameStateAsync(true));
 };
 
-export const requestGame = (pseudo) => (dispatch, getState) => {
+export const requestGame = (playerInfos) => (dispatch, getState) => {
+  console.log(playerInfos);
   set(push(ref(getDatabase(), 'players')), {
-    pseudo
+    pseudo: playerInfos.pseudo,
+    stamp: playerInfos.stamp
   })
   .then(() => {
     dispatch(setGameStateAsync(false));

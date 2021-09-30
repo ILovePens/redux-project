@@ -12,10 +12,11 @@ export function Nav(props) {
         );
   return (
     <header className="App-header">
+      <h1>ConnectX</h1>
       <div className="nav-items">
         {navItems}
       </div>
-      <Reset title="Reset all" onClick={() => dispatch(reset())}/>        
+{/*      <Reset title="Reset all" onClick={() => dispatch(reset())}/>*/}
     </header>
   );
 }

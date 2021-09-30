@@ -40,26 +40,27 @@ export function ConnectX(props) {
   const currentSlots = history[stepNumber].slots;
   const turnAction = useSelector(selectTurnAction);
   const players = useSelector(selectPlayers);
-  const pseudo = props.pseudo;
+  const playerInfos = props.playerInfos;
+  const pseudo = playerInfos.pseudo;
 
   let gameSettingsForm = <Form sendGameSettings={(i) => dispatch(sendGameSettings(i))} />
-  let requestGameButton = <button onClick={() => dispatch(requestGame(pseudo))}>Request game</button>
+  let requestGameButton = <button onClick={() => dispatch(requestGame(playerInfos))}>Request game</button>
   let endTurnButton = null;
   let resetButton = <Reset title="Reset" onClick={() => dispatch(reset())}/>
 
   let gameControls =
-    <div>
+    <span>
       <button onClick={() => dispatch(flipBoard(1))}>Flip right</button>
       <button onClick={() => dispatch(flipBoard(-1))}>Flip left</button>
       <Switch isOn={!useSelector(selectGravityState)} onClick={() => dispatch(toggleGravity({toggle:true}))}/>
-    </div>;
+    </span>;
 
   const disabledGameControls =
-    <div>
+    <span>
       <button className={styles.disabled} onClick={() => {}}>Flip right</button>
       <button className={styles.disabled} onClick={() => {}}>Flip left</button>
       <Switch className={styles.disabled} isOn={!useSelector(selectGravityState)} onClick={() => {}}/>
-    </div>;
+    </span>;
 
   let playSlotFunc = (i) => dispatch(playSlot(i));
 
@@ -112,7 +113,7 @@ export function ConnectX(props) {
         requestGameButton = <button className={styles.highlighted} onClick={() => dispatch(requestGame(pseudo))}>Join game</button>;
       }
     }
-  } else if (players && players.length === 0) {
+  } else if (!players) {
     console.log("am i crazy", players);
     dispatch(initPlayers());
   }

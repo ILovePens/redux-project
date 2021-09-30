@@ -5,7 +5,7 @@ import { Counter } from './features/counter/Counter';
 import { TicTacToe } from './features/tictactoe/TicTacToe';
 import { ConnectX } from './features/connectX/ConnectX';
 import { Tbd } from './features/bejeweled/Tbd';
-import { loadState } from './localStorage';
+import { loadSessionItems } from './localStorage';
 import history from './history';
 // CSS
 import './App.css';
@@ -15,26 +15,26 @@ class App extends Component {
     super();
     this.state = {
       items: {
-        'Counter': Counter,
-        'TicTacToe': TicTacToe,
+        // 'Counter': Counter,
+        // 'TicTacToe': TicTacToe,
         'ConnectX': ConnectX,
         'Tbd': Tbd
       },
       itemSelected: null,
-      userPseudo: "",    
+      playerInfos: null,    
     };
     this.handleClick = this.handleClick.bind(this);    
   }
 
   componentDidMount() {
-    let pseudo = this.state.userPseudo; 
-    console.log("componentDidMount",pseudo);
-    if (!pseudo) {
-      pseudo = loadState();
-      console.log("pseudo after loadState", pseudo);
-      if (!pseudo) pseudo = "";
-      this.setState({ userPseudo: pseudo});
-      if (!pseudo) {
+    let playerInfos = this.state.playerInfos; 
+    console.log("componentDidMount",playerInfos);
+    if (!playerInfos) {
+      playerInfos = loadSessionItems();
+      console.log("pseudo after loadState", playerInfos);
+      if (!playerInfos) playerInfos = null;
+      this.setState({ playerInfos: playerInfos});
+      if (!playerInfos) {
         history.push(`/redux-project/login`);
       }
     }
@@ -48,9 +48,9 @@ class App extends Component {
   }
 
   render() {
-    const pseudo = this.state.userPseudo; 
-    console.log("render",pseudo);
-    const itemSelected = this.state.itemSelected ? React.createElement(this.state.items[this.state.itemSelected], {pseudo: pseudo}) : null;    
+    const playerInfos = this.state.playerInfos; 
+    console.log("render",playerInfos);
+    const itemSelected = this.state.itemSelected ? React.createElement(this.state.items[this.state.itemSelected], {playerInfos: playerInfos}) : null;    
     return (
       <div className="App">
         <Nav items={this.state.items} handleClick={this.handleClick}/>
