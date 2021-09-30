@@ -41,7 +41,6 @@ export function ConnectX(props) {
   const turnAction = useSelector(selectTurnAction);
   const players = useSelector(selectPlayers);
   const playerInfos = props.playerInfos;
-  const pseudo = playerInfos.pseudo;
 
   let gameSettingsForm = <Form sendGameSettings={(i) => dispatch(sendGameSettings(i))} />
   let requestGameButton = <button onClick={() => dispatch(requestGame(playerInfos))}>Request game</button>
@@ -67,12 +66,15 @@ export function ConnectX(props) {
   const currentSign = useSelector(selectCurrentSign);
   console.log("currentSign",currentSign);
   console.log("players",players);
+  const pseudo = playerInfos.pseudo;
+  // Use the stamp to differentiate ourselves from an existing player with the same pseudo
+  const idStamp = playerInfos.stamp;
 
   if (players && players.length > 0) {
     const playerCount = players.length;
     console.log("playerCount",playerCount);
 
-    const myPlayer = players.find(e => e.pseudo === pseudo);
+    const myPlayer = players.find(e => e.player.pseudo === pseudo && e.player.stamp === idStamp);
     const isPlayer = myPlayer !== undefined;
     console.log("myplayer",myPlayer);
 
@@ -110,7 +112,7 @@ export function ConnectX(props) {
         requestGameButton = null;
       }
       if (opponentWaiting) {
-        requestGameButton = <button className={styles.highlighted} onClick={() => dispatch(requestGame(pseudo))}>Join game</button>;
+        requestGameButton = <button className={styles.highlighted} onClick={() => dispatch(requestGame(playerInfos))}>Join game</button>;
       }
     }
   } else if (!players) {

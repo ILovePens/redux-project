@@ -87,14 +87,16 @@ export const connectXSlice = createSlice({
 
       const isEndTurn = turnAction.number + 1 === actionsPerTurn;
       const gravIsOff = !state.gravIsOn;
-      if (isEndTurn && gravIsOff) {
-        state.turnAction = {number:0, action:0};
-        state.currentSign = slotValue === 'X' ? 'O' : 'X';
+      if (gravIsOff) {
+        state.transitions = {slots:0, board:0};          
+        if (isEndTurn) {
+          state.turnAction = {number:0, action:0};
+          state.currentSign = slotValue === 'X' ? 'O' : 'X';
+        }
       } else {
         state.turnAction.number += 1;
         state.turnAction.action = 1;
       }
-    // state.transitions = transitions && transitions.find(e => e !== 0) !== -1 ? {slots: transitions, board: 0} : {slots:0, board:0};
       // We add the current board to the history, and assign the stepNumber based on the new history
       history = history.slice(0, stepNumber);      
       state.history = history.concat([{slots: slots, boardFlip: current.boardFlip}]);
@@ -192,7 +194,7 @@ export const connectXSlice = createSlice({
           count++;
         }
       }
-
+      console.log("turnaction",turnAction.action);
       const startOfTurn = !turnAction.action;
       if (startOfTurn) stepNumber++;
       state.stepNumber = stepNumber;
@@ -428,21 +430,24 @@ export const connectXSlice = createSlice({
         const players = action.payload;
         console.log("setGameStateAsync",players);
         const playersRefs = Object.keys(players);
-
-        if(playersRefs.length === 0) {
+        // console.log("testStatePlayers",testStatePlayers);
+        const playersCount = playersRefs.length; 
+        if(playersCount === 0 || !state.players) {
           state.players = [];
           // window.alert('There was an issue, please try again!');          
-        } else if(playersRefs.length === 1) {
-          // const players[playersRefs[0]] = players[playersRefs[0]];
-          if (state.players.length === 0) {
-            state.players = [{pseudo: players[playersRefs[0]].pseudo, sign: 'O', ref: players[playersRefs[0]].stamp}];
+        } else {
+          let statePlayers = state.players;
+          const statePlayersCount = statePlayers.length;
+          if (!statePlayersCount || playersCount === 2) {
+            let sign = 'O';
+            if (statePlayersCount === 1) statePlayers = [];
+            for (const i in playersRefs) {
+              statePlayers = statePlayers.concat({player: players[playersRefs[i]], sign: sign});
+              state.players = statePlayers;
+              sign = 'X';
+            }
             state.transitions = {slots:0, board:0};
-          }
-        } else if (playersRefs.length === 2) {
-          // const players[playersRefs[0]] = players[playersRefs[0]];
-          // const players[playersRefs[1]] = players[playersRefs[1]];
-          state.players = [{pseudo: players[playersRefs[0]].pseudo, sign: 'O', ref: players[playersRefs[0]].stamp},
-                           {pseudo: players[playersRefs[1]].pseudo, sign: 'X', ref: players[playersRefs[1]].stamp}];          
+          }  
         }
       });
   }  
@@ -503,9 +508,9 @@ export const flipBoard = (direction) => (dispatch, getState) => {
 export const jumpTo = (stepNumber) => (dispatch, getState) => {
   if (selectPlayers(getState()).length < 2) { 
     dispatch(changeStep(stepNumber));
-    if(selectGravityState(getState())) {
-      dispatch(toggleGravity({toggle:false}));
-    }
+    // if(selectGravityState(getState())) {
+    //   dispatch(toggleGravity({toggle:false}));
+    // }
   }
 };
 
@@ -547,7 +552,8 @@ export const watchGame = (mySign) => (dispatch, getState) => {
 
     const watchTimer = setInterval(() => {
       const turnData = {turnAction: selectTurnAction(getState()).number, stepNumber: selectStepNumber(getState())};
-      if (mySign === selectCurrentSign(getState())) {
+      // console.log("selectPlayers(getState())",selectPlayers(getState()).length === 2);
+      if (mySign === selectCurrentSign(getState()) || selectPlayers(getState()).length !== 2) {
         clearInterval(watchTimer);
       } else {
         dispatch(updateStateAsync(turnData));
