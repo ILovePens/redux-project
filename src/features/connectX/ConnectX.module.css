@@ -5,10 +5,43 @@
 }
 
 .form {
-  min-height: 22px;
+  min-height: 20px;
   height: 5vh;
   height: calc(var(--vh, 1vh) * 5);  
 }
+  .form * {
+    height: 20px;
+    border: none;
+    margin-left: 10px;
+  } 
+  .form span {
+    margin-top: 0;
+  }
+  .form input {
+    width: 75px;
+    outline: none;
+  }
+  .form input:focus {
+    outline: 1px solid #FFB58F;
+  }  
+  .form button {
+    position: absolute;
+    width: 0;
+    height: 0;
+    padding: 0;
+    border: 11px solid transparent;
+    border-left: 19px solid #ff8882;
+    background-color: transparent;
+    transition: all .6s ease;
+  }
+  .form button:hover {
+    transform: translateX(8px) scale(1.2);
+    /*border-left-color: rgba(255,181,143,1);  */
+    /*border-left-color: rgba(255,117,231,1);  */
+    /*border-left-color: #FFB58F;  */
+    /*border-left-color: #69FFF7;  */
+    border-left-color: rgba(117,255,248,.67);  
+  }
 
 .main {
   height: 55vh;
@@ -76,10 +109,11 @@
 }
 
 .slotContentX {
-  background-color: red;
+  background-color: #ff8882;
 }
 .slotContentO {
-  background-color: yellow;
+  /*background-color: #34807C;*/
+  background-color: #82C3FF;
 }
 
 .win {

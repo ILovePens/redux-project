@@ -2,17 +2,17 @@ import React from 'react';
 // import { useDispatch } from 'react-redux';
 import { reset } from './navSlice';
 import { Reset } from '../general/helpers/Components';
-// import styles from './Nav.module.css';
+import styles from './Nav.module.css';
 
 export function Nav(props) {
   // const dispatch = useDispatch();
   const navItems = Object.keys(props.items)
         .map((key,index) =>
-          <button name={key} key={index} onClick={(i) => props.handleClick(i)}>{key}</button>
+          <button name={key} key={index} onClick={(i) => props.handleClick(i)}>{key === 'ConnectX' ? `Jouer à ${key}` : key}</button>
         );
   return (
     <header className="App-header">
-      <h1 id="title">Redux-project</h1>
+      <h1 className={styles.logo}>Redux-progress</h1>
       <div className="nav-items">
         {navItems}
       </div>
