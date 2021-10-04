@@ -69,7 +69,7 @@ export function ConnectX(props) {
   const pseudo = playerInfos.pseudo;
   // Use the stamp to differentiate ourselves from an existing player with the same pseudo
   const idStamp = playerInfos.stamp;
-
+  let gameStatusClass = '';
   if (players && players.length > 0) {
     const playerCount = players.length;
     console.log("playerCount",playerCount);
@@ -126,6 +126,7 @@ export function ConnectX(props) {
     if (previousAction === 1) {
       playSlotFunc = () => {};
       endTurnButton = <button onClick={() => dispatch(endTurn())}>End turn</button>
+      gameStatusClass = styles.canEndTurn;
     } else {
       gameControls = disabledGameControls;
     }
@@ -197,6 +198,7 @@ export function ConnectX(props) {
       {gameSettingsForm}
       <Board
         isMainBoard={true}
+        statusClass={gameStatusClass}
         boardParams={boardParams}
         slots={currentSlots}
         transitions={transitions}

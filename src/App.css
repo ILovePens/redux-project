@@ -2,7 +2,7 @@
 
 body {
   font: 14px "Century Gothic", Futura, sans-serif;
-  margin: 0 3vw;
+  /*margin: 0 3vw;*/
   background-color: #f8f8f8;
 }
 
@@ -23,8 +23,10 @@ body {
 
 .App-header {
   min-height: 44px;
+  width: 94vw;
   height: 10vh;
-  height: calc(var(--vh, 1vh) * 10);  
+  height: calc(var(--vh, 1vh) * 10);
+  margin: 0 auto;  
   display: flex;
   align-items: center;
   justify-content: space-between;
