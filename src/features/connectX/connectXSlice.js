@@ -21,6 +21,7 @@ const initialState = {
   sortIsAsc: true,
   gravIsOn: true,
   transitions: {slots:0, board:0},
+  animations: 0,
   players: null,
 };
 
@@ -40,7 +41,11 @@ export const setGameStateAsync = createAsyncThunk(
     const response = await readGameState(isInit);
     let players = response.players;
     if (isInit) {
-      if (!players) players = [];
+      if (selectPlayers(thunkAPI.getState())) {
+        return;
+      } else {
+        if (!players) players = [];
+      }     
     } else {
       const playerCount = Object.keys(players).length;
 
@@ -88,10 +93,22 @@ export const connectXSlice = createSlice({
       const isEndTurn = turnAction.number + 1 === actionsPerTurn;
       const gravIsOff = !state.gravIsOn;
       if (gravIsOff) {
+        const width = state.gameSettings.width,
+            height = state.gameSettings.height;
+        const isFloating = current.boardFlip % 2 === 0 ? slots[slotIndex + width] === 0 : slots[slotIndex + height] === 0;
+        if (isFloating) {
+          let animations = state.animations ? state.animations.slice() : Array(width * height).fill(0);
+          animations[slotIndex] = 'floating';      
+          state.animations = animations;
+        }
+
         state.transitions = {slots:0, board:0};          
         if (isEndTurn) {
           state.turnAction = {number:0, action:0};
           state.currentSign = slotValue === 'X' ? 'O' : 'X';
+        } else {
+          state.turnAction.number += 1;
+          state.turnAction.action = 1;
         }
       } else {
         state.turnAction.number += 1;
@@ -123,7 +140,7 @@ export const connectXSlice = createSlice({
       }
     },
 
-    toggleGravity: (state, action) => {
+    gravity: (state, action) => {
       const slotIndex = action.payload.slotIndex;
       const singleSlotMode = typeof slotIndex === 'undefined' ? false : true;
 
@@ -143,8 +160,10 @@ export const connectXSlice = createSlice({
         isEndTurn = turnAction.number === actionsPerTurn
       }
 
+      const noEditMode = action.payload.noEdit;
       const gravIsOn = state.gravIsOn;
-      if (gravIsOn) {
+      if (gravIsOn || noEditMode) {
+        state.animations = 0;
         let width = state.gameSettings.width,
             height = state.gameSettings.height;
         if (current.boardFlip % 2 !== 0) {
@@ -167,6 +186,7 @@ export const connectXSlice = createSlice({
           count = slotScore;
         }
         var transitions = Array(width * height).fill(0);
+        var animations = transitions.slice();
         // We iterate through every rows, counting it (count), starting from the second to last one and going up
         for (let i = slots.length - 1 - count * width; i >= 0; i -= width) {
           // We then iterate through each row, to get to each and every slot
@@ -179,11 +199,15 @@ export const connectXSlice = createSlice({
               for (let l = count; l > 0; l--) {
                 const targetIndex = index + width * l;
                 if(!slots[targetIndex]) {
-                  // If the slot is filled and the destination is free, we switch the values
-                  // (l) provides the height indication for the animation
-                  slots[targetIndex] = slots[index];
-                  slots[index] = 0;
-                  transitions[targetIndex] = l;
+                  if (noEditMode) {
+                    animations[index] = 'floating';
+                  } else {
+                    // If the destination is free, we switch the values
+                    // (l) provides the height indication for the animation
+                    slots[targetIndex] = slots[index];
+                    slots[index] = 0;
+                    transitions[targetIndex] = l;
+                  }
                   break;
                 }
               }
@@ -194,26 +218,31 @@ export const connectXSlice = createSlice({
           count++;
         }
       }
-      console.log("turnaction",turnAction.action);
+
       const startOfTurn = !turnAction.action;
-      if (startOfTurn) stepNumber++;
-      state.stepNumber = stepNumber;
-      if (isEndTurn) {
-        state.turnAction = {number:0, action:0};
-        state.currentSign = state.currentSign === 'X' ? 'O' : 'X';        
+      if (noEditMode) {
+        state.animations = animations;
       } else {
-        state.turnAction.number = isAction ? turnAction.number + 1 : turnAction.number;
-        state.turnAction.action = isAction ? 2 : turnAction.action;
+        if (startOfTurn) stepNumber++;
+        state.stepNumber = stepNumber;
+        if (isEndTurn) {
+          state.turnAction = {number:0, action:0};
+          state.currentSign = state.currentSign === 'X' ? 'O' : 'X';        
+        } else {
+          state.turnAction.number = isAction ? turnAction.number + 1 : turnAction.number;
+          state.turnAction.action = isAction ? 2 : turnAction.action;
+        }
+
+        history = history.slice(0, stepNumber);
+        state.history = history.concat([{slots: slots, boardFlip: current.boardFlip}]);
+        // We check if there is any slotScore > 0 so we dont expect a transition callback when there isn't
+        const hasTransitions = transitions && transitions.filter(el => {return el !== 0;}).length > 0 ? true : false;
+        // If the toggle was called with a click, we clear the board transition,
+        // if the gravity is turned off, we clear the slots transitions
+        state.transitions = {slots: gravIsOn ? hasTransitions ? transitions : 0 : 0, board: isAction ? 0 : turnAction.action !== 3 ? 0 : state.transitions.board};
       }
 
-      history = history.slice(0, stepNumber);
-      state.history = history.concat([{slots: slots, boardFlip: current.boardFlip}]);
 
-      // We check if there is any slotScore > 0 so we dont expect a transition callback when there isn't
-      const hasTransitions = transitions && transitions.filter(el => {return el !== 0;}).length > 0 ? true : false;
-      // If the toggle was called with a click, we clear the board transition,
-      // if the gravity is turned off, we clear the slots transitions
-      state.transitions = {slots: gravIsOn ? hasTransitions ? transitions : 0 : 0, board: isAction ? 0 : turnAction.action !== 3 ? 0 : state.transitions.board};
       if (state.players && state.players.length === 2) {  
         console.log("set db toggleGravity"); 
         const db = getDatabase();    
@@ -221,20 +250,25 @@ export const connectXSlice = createSlice({
         if (isAction) {
           set(baseRef, gravIsOn);
         }
-        baseRef = ref(db, `/history/${stepNumber}`);
-        set(baseRef, {slots: slots, boardFlip: current.boardFlip});
-        if (startOfTurn) {
-          baseRef = ref(db, '/stepNumber/');
-          set(baseRef, stepNumber);
+        if (!noEditMode) {
+          baseRef = ref(db, `/history/${stepNumber}`);
+          set(baseRef, {slots: slots, boardFlip: current.boardFlip});
+          if (startOfTurn) {
+            baseRef = ref(db, '/stepNumber/');
+            set(baseRef, stepNumber);
+          }
+          if (isEndTurn) {
+            baseRef = ref(db, '/currentSign/');
+            set(baseRef, state.currentSign);
+          }          
+          baseRef = ref(db, '/turnAction/');
+          set(baseRef, state.turnAction.number);
+          baseRef = ref(db, '/transitions/');
+          set(baseRef, state.transitions);
+        } else {
+          baseRef = ref(db, '/animations/');
+          set(baseRef, state.animations);
         }
-        if (isEndTurn) {
-          baseRef = ref(db, '/currentSign/');
-          set(baseRef, state.currentSign);
-        }          
-        baseRef = ref(db, '/turnAction/');
-        set(baseRef, state.turnAction.number);
-        baseRef = ref(db, '/transitions/');
-        set(baseRef, state.transitions);
       }  
     },
 
@@ -429,25 +463,26 @@ export const connectXSlice = createSlice({
       .addCase(setGameStateAsync.fulfilled, (state, action) => {
         const players = action.payload;
         console.log("setGameStateAsync",players);
-        const playersRefs = Object.keys(players);
-        // console.log("testStatePlayers",testStatePlayers);
-        const playersCount = playersRefs.length; 
-        if(playersCount === 0 || !state.players) {
-          state.players = [];
-          // window.alert('There was an issue, please try again!');          
-        } else {
-          let statePlayers = state.players;
-          const statePlayersCount = statePlayers.length;
-          if (!statePlayersCount || playersCount === 2) {
-            let sign = 'O';
-            if (statePlayersCount === 1) statePlayers = [];
-            for (const i in playersRefs) {
-              statePlayers = statePlayers.concat({player: players[playersRefs[i]], sign: sign});
-              state.players = statePlayers;
-              sign = 'X';
-            }
-            state.transitions = {slots:0, board:0};
-          }  
+        if (players) {
+          const playersRefs = Object.keys(players);
+          const playersCount = playersRefs.length; 
+          if(playersCount === 0 || !state.players) {
+            state.players = [];
+            // window.alert('There was an issue, please try again!');          
+          } else {
+            let statePlayers = state.players;
+            const statePlayersCount = statePlayers.length;
+            if (!statePlayersCount || playersCount === 2) {
+              let sign = 'O';
+              if (statePlayersCount === 1) statePlayers = [];
+              for (const i in playersRefs) {
+                statePlayers = statePlayers.concat({player: players[playersRefs[i]], sign: sign});
+                state.players = statePlayers;
+                sign = 'X';
+              }
+              state.transitions = {slots:0, board:0};
+            }  
+          }
         }
       });
   }  
@@ -457,7 +492,7 @@ export const {
   fillSlot,
   changeStep,
   toggleSort,
-  toggleGravity,
+  gravity,
   flipBoardState,
   endTurn,
   setAsyncStatus,
@@ -474,11 +509,12 @@ export const selectGameSettings = (state) => state.connectX.gameSettings;
 export const selectStepNumber = (state) => state.connectX.stepNumber;
 export const selectSortIsAsc = (state) => state.connectX.sortIsAsc;
 export const selectGravityState = (state) => state.connectX.gravIsOn;
-export const selectTransitions = (state) => state.connectX.transitions;
 export const selectCurrentSign = (state) => state.connectX.currentSign;
 export const selectPlayers = (state) => state.connectX.players;
 export const selectAsyncStatus = (state) => state.connectX.asyncStatus;
 export const selectTurnAction = (state) => state.connectX.turnAction;
+export const selectTransitions = (state) => state.connectX.transitions;
+export const selectAnimations = (state) => state.connectX.animations;
 
 
 export const playSlot = (slotIndex) => (dispatch, getState) => {
@@ -494,14 +530,16 @@ export const playSlot = (slotIndex) => (dispatch, getState) => {
   dispatch(fillSlot(data));
 
   if(gravIsOn) {
-    dispatch(toggleGravity({toggle:false, slotIndex}));
+    dispatch(gravity({toggle:false, slotIndex}));
   }
 };
 
 export const flipBoard = (direction) => (dispatch, getState) => {
   dispatch(flipBoardState(direction));
   if(selectGravityState(getState())) {
-    dispatch(toggleGravity({toggle:false}));
+    dispatch(gravity({toggle:false}));
+  } else {
+    dispatch(gravity({toggle:false, noEdit: true}));
   }
 };
 

@@ -13,11 +13,11 @@ export function styleWin() {
 // LAUNCH TRANSITIONS //
 export function animateBoards() {
   // We get all elements with the transition class
-  const animatedElements = Array.from(document.querySelectorAll('.hasTransition'));
-  animatedElements.forEach(e => {
+  const transitionedElements = Array.from(document.querySelectorAll('.hasTransition'));
+  transitionedElements.forEach(e => {
     // First we clear out the class on the previously animated elements
-    e.classList.remove(styles.animate);
+    e.classList.remove(styles.transition);
     // We trust the transitions for animations happening after this update
-    setTimeout(() => { e.classList.add(styles.animate); }, 0);
+    setTimeout(() => { e.classList.add(styles.transition); }, 0);
   });
 };

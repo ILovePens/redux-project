@@ -64,16 +64,28 @@
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  /*animation: Slot-floating infinite 3s ease-in-out;*/
+  .floating {
+    animation: Slot-floating infinite 2.6s ease-in-out;
+  }
 }
 
 @keyframes Slot-floating {
   0% {
+    transform: translateY(-3%);
+  }
+  50% {
+    transform: translateY(3%);
   }
   100% {
-  }
+    transform: translateY(-3%);
+  }  
 }
+/* !!!!!!!!!!!!!!!!!!!!!!! TODO !!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+- STYLE FOR NEXT PLAYER DISPLAY IN HANDLER
+- LINK HANDLER TO ENDTURN CLICK
+
+!!!!!!!!!!!!!!!!!!!!!!! TODO !!!!!!!!!!!!!!!!!!!!!!!!!!! */
 
 
 .board {
@@ -247,15 +259,15 @@
 /* Rethink the gravity movement with transform, and use transform(--var(a),--var(b)) to input the correct direction*/
 
 
-.animate.main_board.flip {
+.transition.main_board.flip {
   transform: translateY(-50%) rotateZ(0deg);
   transition: 0.8s transform ease;  
 }
-.animate.flip {
+.transition.flip {
   transform: rotateZ(0deg);
   transition: 0.8s transform ease;  
 }
-.animate.fall {
+.transition.fall {
   transform: translate(0,0);
   transition-duration: var(--speed);
   transition-property: transform; 

@@ -16,8 +16,12 @@ function Slot(props) {
 		// DISPLAY SLOT CONTENT //
     const contentClass = props.value ? `${styles.slotContent} ${props.value === 'X' ? styles.slotContentX : styles.slotContentO}` : "";
     
+    // ADDITIONNAL SLOT FEATURES //
+    let animType = props.animation ? props.animation : '';
+    animType = styles[animType];
+
     // DISPLAY WIN //
-    const winClass = props.winStyle ? "wonSlot" : "";
+    const winClass = props.winStyle ? 'wonSlot' : '';
     let coeff = -1;
   return (
     <button
@@ -25,7 +29,7 @@ function Slot(props) {
     	onClick={props.onClick}
     >
       <div 	style={{'--slotStartPos': `calc(${coeff * slotScore * 125}% + ${slotScore}px)`,'--speed': `${speed}s`}}
-						className={`${contentClass} ${transitionClass}`} onTransitionEnd={props.handleTransitionEnd}>
+						className={`${contentClass} ${transitionClass} ${animType}`} onTransitionEnd={props.handleTransitionEnd}>
       </div>
     </button>
   );

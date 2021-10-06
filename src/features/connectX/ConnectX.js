@@ -4,7 +4,7 @@ import {
   playSlot,
   jumpTo,
   toggleSort,
-  toggleGravity,
+  gravity,
   flipBoard,
   endTurn,  
   sendGameSettings,
@@ -17,12 +17,13 @@ import {
   selectTurnAction,
   selectCurrentSign,
   selectPlayers,
-  selectTransitions,
   selectGravityState,  
   selectGameSettings,
   selectHistory,
   selectStepNumber,
   selectSortIsAsc,
+  selectTransitions,
+  selectAnimations,
 } from './connectXSlice';
 import Board from './components/Board';
 import Form from './components/Form';
@@ -51,7 +52,7 @@ export function ConnectX(props) {
     <span>
       <button onClick={() => dispatch(flipBoard(1))}>Flip right</button>
       <button onClick={() => dispatch(flipBoard(-1))}>Flip left</button>
-      <Switch isOn={!useSelector(selectGravityState)} onClick={() => dispatch(toggleGravity({toggle:true}))}/>
+      <Switch isOn={!useSelector(selectGravityState)} onClick={() => dispatch(gravity({toggle:true}))}/>
     </span>;
 
   const disabledGameControls =
@@ -123,6 +124,7 @@ export function ConnectX(props) {
   // We want the player to use one of his two actions to fill a slot
   if (turnAction.number) {
     const previousAction = turnAction.action;
+    console.log("previousAction",previousAction);
     if (previousAction === 1) {
       playSlotFunc = () => {};
       endTurnButton = <button onClick={() => dispatch(endTurn())}>End turn</button>
@@ -201,10 +203,11 @@ export function ConnectX(props) {
         statusClass={gameStatusClass}
         boardParams={boardParams}
         slots={currentSlots}
-        transitions={transitions}
         flip={boardFlip}
         winIndexes={winIndexes}
         onClick={(i) => playSlotFunc(i)}
+        transitions={transitions}
+        animations={useSelector(selectAnimations)}
       />
       <div className={styles.game_info}>
         <div className={styles.status}>{status}</div>

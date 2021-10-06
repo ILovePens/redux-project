@@ -30,7 +30,7 @@ class Board extends React.Component {
   };
 
   // PREPARE THE SLOT //
-  renderSlot = (i, isBoardWon, transition) => {
+  renderSlot = (i, isBoardWon, transition, animation) => {
     // We deactivate the handleclick action if the board is won
     const onClickFunc = isBoardWon ? undefined : () => this.props.onClick(i);
 
@@ -39,7 +39,7 @@ class Board extends React.Component {
     const winStyle = winIndexes && winIndexes.includes(i) ? true : false;
 
     let slotScore = 0;
-    let animationCallback;
+    let transitionCallback;
     if(transition) {
       // Assign the slot a score based on the animation map: the higher the score, the longer the animation 
       slotScore = transition;
@@ -51,9 +51,10 @@ class Board extends React.Component {
         // Finds the first index with a maxScore in the map and check if it corresponds to the current index
         const isFirstMaxScoreSlot = i === transitions.findIndex(e => e === maxScore);
         // We make this slot a reference for the longest animation and put the callback onto it
-        if(isFirstMaxScoreSlot) animationCallback = (i) => this.handleTransitionEnd(i);
+        if(isFirstMaxScoreSlot) transitionCallback = (i) => this.handleTransitionEnd(i);
       }
     }
+
     return (
       <Slot
         key={i}
@@ -61,7 +62,8 @@ class Board extends React.Component {
         onClick={onClickFunc}
         slotScore={slotScore}
         winStyle={winStyle}
-        handleTransitionEnd={animationCallback}
+        animation={animation}
+        handleTransitionEnd={transitionCallback}
       /> 
     );
   }
@@ -72,14 +74,17 @@ class Board extends React.Component {
     let index = 0;
     const transitions = this.props.transitions;
     const slotTransitions = transitions ? this.props.transitions.slots : null;
+    const slotAnimations = this.props.animations ? this.props.animations : null;
     let slotTransition = 0;
+    let slotAnimation = 0;
     // Outer loop adding the full rows to the board
     for (let i = 0; i < boardParams.height; i++) {
       let slots = [];
       // Inner loop creating the slots of the rows
       for (let j = 0; j < boardParams.width; j++) {
         if (slotTransitions) slotTransition = slotTransitions[index];
-        slots.push(this.renderSlot(index, isBoardWon, slotTransition));
+        if (slotAnimations) slotAnimation = slotAnimations[index];
+        slots.push(this.renderSlot(index, isBoardWon, slotTransition, slotAnimation));
         index++;
       }
       // At the end of the outer loop, we encapsulate our slots in row
