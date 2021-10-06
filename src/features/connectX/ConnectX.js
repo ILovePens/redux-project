@@ -64,13 +64,10 @@ export function ConnectX(props) {
 
   let playSlotFunc = (i) => dispatch(playSlot(i));
 
-  const currentSign = useSelector(selectCurrentSign);
-  console.log("currentSign",currentSign);
   console.log("players",players);
   const pseudo = playerInfos.pseudo;
   // Use the stamp to differentiate ourselves from an existing player with the same pseudo
   const idStamp = playerInfos.stamp;
-  let gameStatusClass = '';
   if (players && players.length > 0) {
     const playerCount = players.length;
     console.log("playerCount",playerCount);
@@ -121,6 +118,9 @@ export function ConnectX(props) {
     dispatch(initPlayers());
   }
 
+  const currentSign = useSelector(selectCurrentSign);
+  console.log("currentSign",currentSign);
+  let gameStatusClass = currentSign === 'X' ? styles.redPlayerTurn : styles.bluePlayerTurn;
   // We want the player to use one of his two actions to fill a slot
   if (turnAction.number) {
     const previousAction = turnAction.action;
@@ -128,7 +128,7 @@ export function ConnectX(props) {
     if (previousAction === 1) {
       playSlotFunc = () => {};
       endTurnButton = <button onClick={() => dispatch(endTurn())}>End turn</button>
-      gameStatusClass = styles.canEndTurn;
+      gameStatusClass = {current:styles.canEndTurn, previous: gameStatusClass};
     } else {
       gameControls = disabledGameControls;
     }

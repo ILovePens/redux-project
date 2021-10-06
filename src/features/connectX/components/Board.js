@@ -159,7 +159,13 @@ class Board extends React.Component {
       title = '';
       cssCoeff = 1;
       boardClass = styles.main
-      statusHandler = <button onClick={() => console.log("statusClicked")} className={`${styles.statusHandler} ${this.props.statusClass}`}></button>
+      let statusClass = this.props.statusClass;
+      statusClass = typeof statusClass === 'object' ? statusClass : {current: statusClass, previous: ''};
+      statusHandler = 
+        <div className={styles.statusHandler}>
+          <button onClick={() => console.log("statusClicked")} className={`${statusClass.current}`}></button>
+          <button className={`${statusClass.previous} ${styles.fadeout} hasTransition`}></button>
+        </div>;
       if (this.props.winIndexes.length) isBoardWon = true;   
     }
     // We tweak the style of the board depending on it being the main one or not
