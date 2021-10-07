@@ -1,7 +1,7 @@
 
-export const loadSessionItems = () => {
+export const loadSessionItems = (name) => {
 	try{
-		const serializedItems = sessionStorage.getItem('playerInfos');
+		const serializedItems = sessionStorage.getItem(name);
 		if(serializedItems === null){
 			return undefined;
 		}
@@ -12,10 +12,10 @@ export const loadSessionItems = () => {
 	}
 }
 
-export const saveSessionItems = (items) => {
+export const saveSessionItems = (items, name) => {
 	try{
 		const serializedItems = JSON.stringify(items)
-		sessionStorage.setItem('playerInfos', serializedItems);
+		sessionStorage.setItem(name, serializedItems);
 	} catch (err) {
 		console.log(err)
 	}

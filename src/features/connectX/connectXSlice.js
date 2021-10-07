@@ -20,7 +20,7 @@ const initialState = {
   currentSign: 'X',
   sortIsAsc: true,
   gravIsOn: true,
-  transitions: {slots:0, board:0},
+  transitions: {slots:0, board:0, status:0},
   animations: 0,
   players: null,
 };
@@ -356,8 +356,7 @@ export const connectXSlice = createSlice({
       const turnAction = {number:0, action:0};
       state.turnAction = turnAction;
       state.currentSign = state.currentSign === 'X' ? 'O' : 'X';
-      const transitions = {slots: 0, board: 0};
-      state.transitions = transitions;
+      state.transitions = {slots:0, board:0, status:1};
       if (state.players && state.players.length === 2) {
         console.log("set db endTurn");
         const db = getDatabase();
@@ -366,7 +365,7 @@ export const connectXSlice = createSlice({
         baseRef = ref(db, '/currentSign/');
         set(baseRef, state.currentSign);
         baseRef = ref(db, '/transitions/');
-        set(baseRef, transitions);
+        set(baseRef, {slots:0, board:0});
       }
     },
 

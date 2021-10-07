@@ -6,7 +6,7 @@ class Connexion extends React.Component {
 		event.preventDefault();
 		console.log(this);
 		const pseudo = this.pseudoInput.value;
-		saveSessionItems({pseudo:pseudo, stamp:(+new Date()).toString(36)});
+		saveSessionItems({pseudo:pseudo, stamp:(+new Date()).toString(36)}, 'playerInfos');
 		history.push(`/redux-project/`);
 	};
 

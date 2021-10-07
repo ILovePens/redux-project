@@ -30,7 +30,7 @@ class App extends Component {
     let playerInfos = this.state.playerInfos; 
     console.log("componentDidMount",playerInfos);
     if (!playerInfos) {
-      playerInfos = loadSessionItems();
+      playerInfos = loadSessionItems('playerInfos');
       console.log("pseudo after loadState", playerInfos);
       if (!playerInfos) playerInfos = null;
       this.setState({ playerInfos: playerInfos});

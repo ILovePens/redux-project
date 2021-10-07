@@ -12,11 +12,9 @@ class Board extends React.Component {
     // We use this hook to manipulate the transitions on the dom elements 
     const transitions = this.props.transitions;
     if(this.props.isMainBoard) {
-
       // If transitions are present, we play them
-      if (transitions && (transitions.slots || transitions.board)) {
-        animateBoards();
-      } else {
+      animateBoards();
+      if (!transitions) {
         // If there's none, we directly style the winning slots
         if(this.props.winIndexes.length) styleWin();
       }
@@ -159,12 +157,13 @@ class Board extends React.Component {
       title = '';
       cssCoeff = 1;
       boardClass = styles.main
-      let statusClass = this.props.statusClass;
-      statusClass = typeof statusClass === 'object' ? statusClass : {current: statusClass, previous: ''};
+      const statusClass = this.props.statusClass;
+      console.log(statusClass);
+
       statusHandler = 
         <div className={styles.statusHandler}>
-          <button onClick={() => console.log("statusClicked")} className={`${statusClass.current}`}></button>
-          <button className={`${statusClass.previous} ${styles.fadeout} hasTransition`}></button>
+          <button className={`${statusClass.current}`}></button>
+          <button onClick={this.props.endTurnFunc} className={`${statusClass.previous}`}></button>
         </div>;
       if (this.props.winIndexes.length) isBoardWon = true;   
     }

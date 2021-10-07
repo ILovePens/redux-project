@@ -35,7 +35,7 @@ import styles from './ConnectX.module.css';
 export function ConnectX(props) {
   const dispatch = useDispatch();
 
-  let history = useSelector(selectHistory);
+  const history = useSelector(selectHistory);
   const stepNumber = useSelector(selectStepNumber);
 
   const currentSlots = history[stepNumber].slots;
@@ -46,6 +46,7 @@ export function ConnectX(props) {
   let gameSettingsForm = <Form sendGameSettings={(i) => dispatch(sendGameSettings(i))} />
   let requestGameButton = <button onClick={() => dispatch(requestGame(playerInfos))}>Request game</button>
   let endTurnButton = null;
+  let endTurnFunc;
   let resetButton = <Reset title="Reset" onClick={() => dispatch(reset())}/>
 
   let gameControls =
@@ -119,8 +120,17 @@ export function ConnectX(props) {
   }
 
   const currentSign = useSelector(selectCurrentSign);
+  const transitions = useSelector(selectTransitions);  
   console.log("currentSign",currentSign);
-  let gameStatusClass = currentSign === 'X' ? styles.redPlayerTurn : styles.bluePlayerTurn;
+  let gameStyle;
+  let reverseGameStyle;
+  if (currentSign ===  'X') {
+    gameStyle = styles.redPlayerTurn
+    reverseGameStyle = styles.bluePlayerTurn
+  } else {
+    gameStyle = styles.bluePlayerTurn
+    reverseGameStyle = styles.redPlayerTurn
+  }
   // We want the player to use one of his two actions to fill a slot
   if (turnAction.number) {
     const previousAction = turnAction.action;
@@ -128,10 +138,23 @@ export function ConnectX(props) {
     if (previousAction === 1) {
       playSlotFunc = () => {};
       endTurnButton = <button onClick={() => dispatch(endTurn())}>End turn</button>
-      gameStatusClass = {current:styles.canEndTurn, previous: gameStatusClass};
+      endTurnFunc = () => dispatch(endTurn());
+      gameStyle = {
+        current: `${gameStyle} ${styles.brighten} hasTransition`, 
+        previous: `${styles.canEndTurn} ${styles.fadeInOnHover} hasTransition`
+      };
+      // saveSessionItems 
+      
     } else {
+      gameStyle = {current: `${gameStyle}`, previous: ``};
       gameControls = disabledGameControls;
     }
+  } else {
+    console.log(transitions);
+    gameStyle = {
+      current: gameStyle,
+      previous: history.length > 1 ? `${transitions.status ? styles.endTurn : reverseGameStyle} ${styles.fadeout} hasTransition` : ''
+    };
   }
 
   const gameSettings = useSelector(selectGameSettings);
@@ -141,7 +164,6 @@ export function ConnectX(props) {
     height: gameSettings.height
   }
 
-  let transitions = useSelector(selectTransitions);
   let winIndexes = [];
   const scoreTarget = gameSettings.scoreTarget;
   if (stepNumber >= (scoreTarget * 2 - 1)) {
@@ -200,12 +222,13 @@ export function ConnectX(props) {
       {gameSettingsForm}
       <Board
         isMainBoard={true}
-        statusClass={gameStatusClass}
+        statusClass={gameStyle}
         boardParams={boardParams}
         slots={currentSlots}
         flip={boardFlip}
         winIndexes={winIndexes}
         onClick={(i) => playSlotFunc(i)}
+        endTurnFunc={endTurnFunc}
         transitions={transitions}
         animations={useSelector(selectAnimations)}
       />
