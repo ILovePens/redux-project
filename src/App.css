@@ -1,13 +1,40 @@
 @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@200;300;400;600;700;900&display=swap');
 
-body {
-  font: 14px "Century Gothic", Futura, sans-serif;
+body, form *, button {
+  font: 14px "Cairo", Futura, sans-serif;
   /*margin: 0 3vw;*/
+}
+body {
   background-color: #f8f8f8;
+}
+
+form *, button {
+  line-height: 20px;
 }
 
 .App {
   text-align: center;
+}
+
+
+.logo {
+  color: #ff8882;
+  font-family: 'Cairo', sans-serif;
+  font-size: 22px;
+  margin: 0;
+  min-width: 165px;
+  text-align: center;
+}
+
+.logo:before {
+  content: "";
+  display: block;
+  width: 92%;
+  height: 17px;
+  position: relative;
+  margin-top: -17px;
+  top: 24px;
+  background-color: rgba(255,181,143,0.2);
 }
 
 .App-logo {
@@ -33,9 +60,61 @@ body {
   font-size: calc(10px + 2vmin);
 }
 
+
+.connexionBox .App-header {
+  justify-content: center;
+  margin-top: 30px;  
+}
+.connexionBox .logo {
+  font-size: 44px;
+  min-width: 330px;
+}
+.connexionBox .logo:before {
+  height: 34px;
+  margin-top: -34px;
+  top: 48px;
+}
+
 .App-link {
   color: rgb(112, 76, 182);
 }
+
+.form {
+  display: flex;
+  justify-content: center;
+  min-height: 20px;
+  height: 5vh;
+  height: calc(var(--vh, 1vh) * 3.5);  
+}
+  .form * {
+    height: 20px;
+    border: none;
+    margin-right: 10px;
+  } 
+  .form span {
+    margin-top: 0;
+  }
+  .form input {
+    width: 75px;
+    outline: none;
+  }
+  .form input:focus {
+    outline: 1px solid #FFB58F;
+  }  
+  .form button {
+    width: 0;
+    height: 0;
+    padding: 0;
+    border: 11px solid transparent;
+    border-left: 19px solid #ff8882;
+    background-color: transparent;
+    transition: all .6s ease;
+  }
+  .form button:hover {
+    cursor: pointer;
+    transform: translateX(8px) scale(1.2);
+    border-left-color: rgba(117,255,248,.67);  
+  }
 
 footer {
   margin-top: 20px;

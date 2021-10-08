@@ -2,7 +2,6 @@ import React from 'react';
 // import { useDispatch } from 'react-redux';
 import { reset } from './navSlice';
 import { Reset } from '../general/helpers/Components';
-import styles from './Nav.module.css';
 
 export function Nav(props) {
   // const dispatch = useDispatch();
@@ -12,7 +11,7 @@ export function Nav(props) {
         );
   return (
     <header className="App-header">
-      <h1 className={styles.logo}>Redux-progress</h1>
+      <h1 className="logo">Redux-progress</h1>
       <div className="nav-items">
         {navItems}
       </div>

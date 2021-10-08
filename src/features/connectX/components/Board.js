@@ -14,7 +14,7 @@ class Board extends React.Component {
     if(this.props.isMainBoard) {
       // If transitions are present, we play them
       animateBoards();
-      if (!transitions) {
+      if (!transitions || (!transitions.slots && !transitions.board)) {
         // If there's none, we directly style the winning slots
         if(this.props.winIndexes.length) styleWin();
       }
@@ -127,12 +127,12 @@ class Board extends React.Component {
 
     const boardWidth = slotSize * paramsWidth;
     const boardHeight = slotSize * paramsHeight;
-    let gameHeight = '';
-    if (size === 1) gameHeight = boardWidth <= boardHeight ? boardHeight : boardWidth;
+    // let gameHeight = '';
+    // if (size === 1) gameHeight = Math.floor(window.innerHeight * 0.615);
     return {
       '--boardWidth': boardWidth + 'px',
       '--boardHeight': boardHeight + 'px',
-      '--gameHeight': gameHeight + 'px',
+      // '--gameHeight': `${gameHeight}px`,
       // We use margin-right: -1px to merge the borders together on the boards, so we bump the slot size by 1 to compensate
       '--slotSize': (slotSize + 1) + 'px',
       '--fontSize': fontSize + 'em'
@@ -151,14 +151,16 @@ class Board extends React.Component {
     let title = this.props.title;
     let cssCoeff = 4;
     let boardClass = styles.moves_board;
+    let disabledClass = '';
     let isBoardWon = false;   
-    let statusHandler = null;   
+    let statusHandler = null;
     if (isMainBoard) {
       title = '';
       cssCoeff = 1;
-      boardClass = styles.main
+      boardClass = styles.main;
+      if (this.props.statusClass.disabled) disabledClass = styles.disabledBoard;
       const statusClass = this.props.statusClass;
-      console.log(statusClass);
+      console.log(this.props.onClick);
 
       statusHandler = 
         <div className={styles.statusHandler}>
@@ -171,7 +173,7 @@ class Board extends React.Component {
     // styleBoard(n, params) styles the board at a 1:n ratio
     return (
       <div style={this.styleBoard(cssCoeff, boardParams)} 
-          className={boardClass}>
+          className={`${boardClass} ${disabledClass}`}>
         {statusHandler}
         {this.createBoard(boardParams, isMainBoard, isBoardWon)}
         <p className={styles.title}>{title}</p>

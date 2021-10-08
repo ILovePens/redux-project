@@ -1,6 +1,9 @@
 import React from 'react';
 import { saveSessionItems } from '../localStorage';
 import history from '../history';
+// CSS
+// import './App.css';
+
 class Connexion extends React.Component {
 	goToApp = event => {
 		event.preventDefault();
@@ -12,14 +15,17 @@ class Connexion extends React.Component {
 
 	render() {
 		return (
-			<div className="connexionBox" onSubmit={(i) => this.goToApp(i)}>
-				<form className="connexion" >
+			<div className="connexionBox">
+			    <header className="App-header">
+			      <h1 className="logo">Redux-progress</h1>
+			    </header>	
+				<form className="form connexion" onSubmit={(i) => this.goToApp(i)}>
 					<input
 						type="text"
 						placeholder="Pseudo"
 						required
 						ref={input => {this.pseudoInput = input}}/>
-					<button type="submit">GO</button>
+					<button type="submit"></button>
 				</form>
 			</div>
 		)

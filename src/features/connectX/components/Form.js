@@ -1,6 +1,6 @@
 import React from 'react';
 // CSS
-import styles from '../ConnectX.module.css';
+// import styles from '../ConnectX.module.css';
 
 class Form extends React.Component {
 	prepareInfos = event => {
@@ -24,7 +24,7 @@ class Form extends React.Component {
 	render() {
 		return (
 			<form 
-				className={styles.form}
+				className="form"
 				onSubmit={i => this.prepareInfos(i)}
 				ref={i => this.infosForm = i}
 			>
