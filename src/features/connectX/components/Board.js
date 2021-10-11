@@ -16,7 +16,10 @@ class Board extends React.Component {
       animateBoards();
       if (!transitions || (!transitions.slots && !transitions.board)) {
         // If there's none, we directly style the winning slots
-        if(this.props.winIndexes.length) styleWin();
+        if(this.props.winIndexes.length) {
+          console.log("hey style win update");
+          styleWin();
+        }
       }
     }
   }
@@ -24,7 +27,10 @@ class Board extends React.Component {
   // TRANSITIONS CALLBACK //
   handleTransitionEnd = (event) => {
     // We wait for the end of the transitions to style the winning slots
-    if(this.props.winIndexes.length) styleWin();
+    if(this.props.winIndexes.length) {
+          console.log("hey style win transitionend");
+      styleWin();
+    }
   };
 
   // PREPARE THE SLOT //
@@ -160,7 +166,7 @@ class Board extends React.Component {
       boardClass = styles.main;
       if (this.props.statusClass.disabled) disabledClass = styles.disabledBoard;
       const statusClass = this.props.statusClass;
-      console.log(this.props.onClick);
+      // console.log(this.props.onClick);
 
       statusHandler = 
         <div className={styles.statusHandler}>

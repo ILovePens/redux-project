@@ -50,6 +50,7 @@ export const setGameStateAsync = createAsyncThunk(
       const playerCount = Object.keys(players).length;
 
       if (playerCount === 1) {
+        set(ref(getDatabase(), '/gameSettings/'), selectGameSettings(thunkAPI.getState()));
         set(ref(getDatabase(), '/gameIsOn/'), false);
       } else if (playerCount === 2) {
         if (response.gameIsOn) {
@@ -142,7 +143,7 @@ export const connectXSlice = createSlice({
       //   }
       // }
     },
-
+// Currently unable to toggle
     gravity: (state, action) => {
       const slotIndex = action.payload.slotIndex;
       const singleSlotMode = typeof slotIndex === 'undefined' ? false : true;
@@ -154,10 +155,13 @@ export const connectXSlice = createSlice({
       const slots = current.slots.slice();
 
       const isAction = action.payload.toggle;
+      let gravityState = state.gravityState;
       const turnAction = state.turnAction;
       let isEndTurn;
+        console.log("isAction", isAction)
       if (isAction) {
-        state.gravityState = state.gravity ? false : true;
+        console.log("gravityState", gravityState)
+        gravityState = gravityState ? false : true;
         const players = state.players;
         if (players && players.length === 2) state.turnAction.action = true;        
         isEndTurn = turnAction.number + 1 === actionsPerTurn;
@@ -166,7 +170,6 @@ export const connectXSlice = createSlice({
       }
 
       const noEditMode = action.payload.noEdit;
-      const gravityState = state.gravityState;
       if (gravityState || noEditMode) {
         state.animations = 0;
         let width = state.gameSettings.width,
@@ -240,6 +243,7 @@ export const connectXSlice = createSlice({
 
         history = history.slice(0, stepNumber);
         state.history = history.concat([{slots: slots, boardFlip: current.boardFlip}]);
+        state.gravityState = gravityState;
         // We check if there is any slotScore > 0 so we dont expect a transition callback when there isn't
         const hasTransitions = transitions && transitions.filter(el => {return el !== 0;}).length > 0 ? true : false;
         // If the toggle was called with a click, we clear the board transition,
@@ -547,17 +551,11 @@ export const playSlot = (slotIndex) => (dispatch, getState) => {
   if(gravityState) {
     dispatch(gravity({toggle:false, slotIndex}));
   }
-
-
 };
 
 export const flipBoard = (direction) => (dispatch, getState) => {
   dispatch(flipBoardState(direction));
-  if(selectGravityState(getState())) {
-    dispatch(gravity({toggle:false}));
-  } else {
-    dispatch(gravity({toggle:false, noEdit: true}));
-  }
+  dispatch(gravity({toggle:false, noEdit: !selectGravityState(getState())}));
 };
 
 export const jumpTo = (stepNumber) => (dispatch, getState) => {
@@ -581,11 +579,13 @@ export const initPlayers = () => (dispatch) => {
 
 export const requestGame = (playerInfos) => (dispatch, getState) => {
   console.log(playerInfos);
+
   set(push(ref(getDatabase(), 'players')), {
     pseudo: playerInfos.pseudo,
     stamp: playerInfos.stamp
   })
   .then(() => {
+    if (!selectPlayers(getState()).length)
     dispatch(setGameStateAsync(false));
     const watchTimer = setInterval(() => {
       if (selectPlayers(getState()).length < 2) {
