@@ -2,14 +2,14 @@ import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { getDatabase, ref, set, push } from "firebase/database";
 import '../../base';
 import { loadSessionItems } from '../../localStorage';
-import { compareGameState,  readGameState } from './connectXAPI';
+import { compareGameState, readGameState } from './connectXAPI';
 
 const initialState = {
   history: [{
     slots: Array(42).fill(0),
     boardFlip: 0,
   }],
-  turnAction: {number:0, action:0},
+  turnAction: {number:0, type:0},
   stepNumber: 0,
   gameSettings: {
     width: 7,
@@ -18,11 +18,11 @@ const initialState = {
   },
   asyncStatus: '',
   currentSign: 'X',
+  players: null,
   sortIsAsc: true,
-  gravIsOn: true,
+  gravityState: true,
   transitions: {slots:0, board:0, status:0},
   animations: 0,
-  players: null,
 };
 
 const actionsPerTurn = 2;
@@ -86,12 +86,12 @@ export const connectXSlice = createSlice({
       slots[slotIndex] = slotValue;
 
       const turnAction = state.turnAction;
-      const startOfTurn = !turnAction.action;
+      const startOfTurn = !turnAction.type;
       if (startOfTurn) stepNumber++;
       state.stepNumber = stepNumber;
 
       const isEndTurn = turnAction.number + 1 === actionsPerTurn;
-      const gravIsOff = !state.gravIsOn;
+      const gravIsOff = !state.gravityState;
       if (gravIsOff) {
         const width = state.gameSettings.width,
             height = state.gameSettings.height;
@@ -104,40 +104,43 @@ export const connectXSlice = createSlice({
 
         state.transitions = {slots:0, board:0};          
         if (isEndTurn) {
-          state.turnAction = {number:0, action:0};
+          state.turnAction = {number:0, type:0};
           state.currentSign = slotValue === 'X' ? 'O' : 'X';
         } else {
           state.turnAction.number += 1;
-          state.turnAction.action = 1;
+          state.turnAction.type = 1;
         }
       } else {
         state.turnAction.number += 1;
-        state.turnAction.action = 1;
+        state.turnAction.type = 1;
       }
       // We add the current board to the history, and assign the stepNumber based on the new history
       history = history.slice(0, stepNumber);      
       state.history = history.concat([{slots: slots, boardFlip: current.boardFlip}]);
+      
+      const players = state.players;
+      if (players && players.length === 2) state.turnAction.action = true;
 
-      if (state.players && state.players.length === 2) {
-        console.log("set db fillSlot");
-        const db = getDatabase();
-        let baseRef = ref(db, '/stepNumber/');
-        if (startOfTurn) {
-          set(baseRef, stepNumber);
-        }
-        if (gravIsOff) {
-          baseRef = ref(db, `/history/${stepNumber}`);
-          set(baseRef, {slots: slots, boardFlip: current.boardFlip});
-          if (isEndTurn) {
-            baseRef = ref(db, '/currentSign/');
-            set(baseRef, state.currentSign);        
-          }
-          baseRef = ref(db, '/turnAction/');
-          set(baseRef, state.turnAction.number);
-          baseRef = ref(db, '/transitions/');
-          set(baseRef, {slots:0, board:0});        
-        }
-      }
+      // if (state.players && state.players.length === 2) {
+      //   console.log("set db fillSlot");
+      //   const db = getDatabase();
+      //   let baseRef = ref(db, '/stepNumber/');
+      //   if (startOfTurn) {
+      //     set(baseRef, stepNumber);
+      //   }
+      //   if (gravIsOff) {
+      //     baseRef = ref(db, `/history/${stepNumber}`);
+      //     set(baseRef, {slots: slots, boardFlip: current.boardFlip});
+      //     if (isEndTurn) {
+      //       baseRef = ref(db, '/currentSign/');
+      //       set(baseRef, state.currentSign);        
+      //     }
+      //     baseRef = ref(db, '/turnAction/');
+      //     set(baseRef, state.turnAction.number);
+      //     baseRef = ref(db, '/transitions/');
+      //     set(baseRef, {slots:0, board:0});        
+      //   }
+      // }
     },
 
     gravity: (state, action) => {
@@ -154,15 +157,17 @@ export const connectXSlice = createSlice({
       const turnAction = state.turnAction;
       let isEndTurn;
       if (isAction) {
-        state.gravIsOn = state.gravIsOn ? false : true;
+        state.gravityState = state.gravity ? false : true;
+        const players = state.players;
+        if (players && players.length === 2) state.turnAction.action = true;        
         isEndTurn = turnAction.number + 1 === actionsPerTurn;
       } else {
         isEndTurn = turnAction.number === actionsPerTurn
       }
 
       const noEditMode = action.payload.noEdit;
-      const gravIsOn = state.gravIsOn;
-      if (gravIsOn || noEditMode) {
+      const gravityState = state.gravityState;
+      if (gravityState || noEditMode) {
         state.animations = 0;
         let width = state.gameSettings.width,
             height = state.gameSettings.height;
@@ -219,18 +224,18 @@ export const connectXSlice = createSlice({
         }
       }
 
-      const startOfTurn = !turnAction.action;
+      const startOfTurn = !turnAction.type;
       if (noEditMode) {
         state.animations = animations;
       } else {
         if (startOfTurn) stepNumber++;
         state.stepNumber = stepNumber;
         if (isEndTurn) {
-          state.turnAction = {number:0, action:0};
+          state.turnAction = {number:0, type:0};
           state.currentSign = state.currentSign === 'X' ? 'O' : 'X';        
         } else {
           state.turnAction.number = isAction ? turnAction.number + 1 : turnAction.number;
-          state.turnAction.action = isAction ? 2 : turnAction.action;
+          state.turnAction.type = isAction ? 2 : turnAction.type;
         }
 
         history = history.slice(0, stepNumber);
@@ -239,37 +244,37 @@ export const connectXSlice = createSlice({
         const hasTransitions = transitions && transitions.filter(el => {return el !== 0;}).length > 0 ? true : false;
         // If the toggle was called with a click, we clear the board transition,
         // if the gravity is turned off, we clear the slots transitions
-        state.transitions = {slots: gravIsOn ? hasTransitions ? transitions : 0 : 0, board: isAction ? 0 : turnAction.action !== 3 ? 0 : state.transitions.board};
+        state.transitions = {slots: gravityState ? hasTransitions ? transitions : 0 : 0, board: isAction ? 0 : turnAction.type !== 3 ? 0 : state.transitions.board};
       }
 
 
-      if (state.players && state.players.length === 2) {  
-        console.log("set db toggleGravity"); 
-        const db = getDatabase();    
-        let baseRef = ref(db, '/gravIsOn/');
-        if (isAction) {
-          set(baseRef, gravIsOn);
-        }
-        if (!noEditMode) {
-          baseRef = ref(db, `/history/${stepNumber}`);
-          set(baseRef, {slots: slots, boardFlip: current.boardFlip});
-          if (startOfTurn) {
-            baseRef = ref(db, '/stepNumber/');
-            set(baseRef, stepNumber);
-          }
-          if (isEndTurn) {
-            baseRef = ref(db, '/currentSign/');
-            set(baseRef, state.currentSign);
-          }          
-          baseRef = ref(db, '/turnAction/');
-          set(baseRef, state.turnAction.number);
-          baseRef = ref(db, '/transitions/');
-          set(baseRef, state.transitions);
-        } else {
-          baseRef = ref(db, '/animations/');
-          set(baseRef, state.animations);
-        }
-      }  
+      // if (state.players && state.players.length === 2) {  
+      //   console.log("set db toggleGravity"); 
+      //   const db = getDatabase();    
+      //   let baseRef = ref(db, '/gravityState/');
+      //   if (isAction) {
+      //     set(baseRef, gravityState);
+      //   }
+      //   if (!noEditMode) {
+      //     baseRef = ref(db, `/history/${stepNumber}`);
+      //     set(baseRef, {slots: slots, boardFlip: current.boardFlip});
+      //     if (startOfTurn) {
+      //       baseRef = ref(db, '/stepNumber/');
+      //       set(baseRef, stepNumber);
+      //     }
+      //     if (isEndTurn) {
+      //       baseRef = ref(db, '/currentSign/');
+      //       set(baseRef, state.currentSign);
+      //     }          
+      //     baseRef = ref(db, '/turnAction/');
+      //     set(baseRef, state.turnAction.number);
+      //     baseRef = ref(db, '/transitions/');
+      //     set(baseRef, state.transitions);
+      //   } else {
+      //     baseRef = ref(db, '/animations/');
+      //     set(baseRef, state.animations);
+      //   }
+      // }  
     },
 
     flipBoardState: (state, action) => {
@@ -311,68 +316,71 @@ export const connectXSlice = createSlice({
       }
 
       const turnAction = state.turnAction;
-      const startOfTurn = !turnAction.action;
+      const startOfTurn = !turnAction.type;
       if (startOfTurn) stepNumber++;        
       state.stepNumber = stepNumber;
       
       const isEndTurn = turnAction.number + 1 === actionsPerTurn;
-      const gravIsOff = !state.gravIsOn;
+      const gravIsOff = !state.gravityState;
 
       if (isEndTurn && gravIsOff) {
-        state.turnAction = {number:0, action:0};
+        state.turnAction = {number:0, type:0};
         state.currentSign = state.currentSign === 'X' ? 'O' : 'X';        
       } else {
         state.turnAction.number += 1;
-        state.turnAction.action = 3;
+        state.turnAction.type = 3;
       }
 
       history = history.slice(0, stepNumber);
       state.history = history.concat([{slots: newSlots, boardFlip: boardFlip}]);
       state.transitions = {slots: 0, board: flipValue * -90};
 
-      if (state.players && state.players.length === 2) {
-        console.log("set db flipBoard");
-        const db = getDatabase();
-        let baseRef = ref(db, '/stepNumber/');
-        if (startOfTurn) {
-          set(baseRef, stepNumber);
-        }
-        if (gravIsOff) {
-          baseRef = ref(db, `/history/${stepNumber}`);
-          set(baseRef, {slots: slots, boardFlip: current.boardFlip});
-          if (isEndTurn) {
-            baseRef = ref(db, '/currentSign/');
-            set(baseRef, state.currentSign);        
-          }
-          baseRef = ref(db, '/turnAction/');
-          set(baseRef, state.turnAction.number);
-          baseRef = ref(db, '/transitions/');
-          set(baseRef, state.transitions);        
-        }
-      } 
+      const players = state.players;
+      if (players && players.length === 2) state.turnAction.action = true;
+
+      // if (state.players && state.players.length === 2) {
+      //   console.log("set db flipBoard");
+      //   const db = getDatabase();
+      //   let baseRef = ref(db, '/stepNumber/');
+      //   if (startOfTurn) {
+      //     set(baseRef, stepNumber);
+      //   }
+      //   if (gravIsOff) {
+      //     baseRef = ref(db, `/history/${stepNumber}`);
+      //     set(baseRef, {slots: slots, boardFlip: current.boardFlip});
+      //     if (isEndTurn) {
+      //       baseRef = ref(db, '/currentSign/');
+      //       set(baseRef, state.currentSign);        
+      //     }
+      //     baseRef = ref(db, '/turnAction/');
+      //     set(baseRef, state.turnAction.number);
+      //     baseRef = ref(db, '/transitions/');
+      //     set(baseRef, state.transitions);        
+      //   }
+      // } 
     },
 
     endTurn: (state) => {
-      const turnAction = {number:0, action:0};
-      state.turnAction = turnAction;
+      // const turnAction = {number:0, type:0, action:true};
+      state.turnAction = {number:0, type:0, action:true};
       state.currentSign = state.currentSign === 'X' ? 'O' : 'X';
       state.transitions = {slots:0, board:0, status:1};
-      if (state.players && state.players.length === 2) {
-        console.log("set db endTurn");
-        const db = getDatabase();
-        let baseRef = ref(db, '/turnAction/');
-        set(baseRef, turnAction.number);
-        baseRef = ref(db, '/currentSign/');
-        set(baseRef, state.currentSign);
-        baseRef = ref(db, '/transitions/');
-        set(baseRef, {slots:0, board:0});
-      }
+      // if (state.players && state.players.length === 2) {
+      //   console.log("set db endTurn");
+      //   const db = getDatabase();
+      //   let baseRef = ref(db, '/turnAction/');
+      //   set(baseRef, turnAction.number);
+      //   baseRef = ref(db, '/currentSign/');
+      //   set(baseRef, state.currentSign);
+      //   baseRef = ref(db, '/transitions/');
+      //   set(baseRef, {slots:0, board:0});
+      // }
     },
 
     changeStep: (state, action) => {
       state.stepNumber = action.payload;
       state.currentSign = state.stepNumber % 2 === 0 ? 'X' : 'O';      
-      state.turnAction = {number:0, action:0};          
+      state.turnAction = {number:0, type:0};          
       state.transitions = {slots:0, board:0};
     },
 
@@ -389,9 +397,11 @@ export const connectXSlice = createSlice({
         boardFlip: 0
       }];
     },
+
     setAsyncStatus: (state, action) => {
       state.asyncStatus = action.payload;
     },
+
     reset: (state, action) => {
       const isDbReset = action.payload;
       const history = state.history.slice(0,1);
@@ -411,7 +421,7 @@ export const connectXSlice = createSlice({
         set(baseRef, 'X');      
         baseRef = ref(db, '/transitions/');
         set(baseRef, transitions);
-        baseRef = ref(db, '/gravIsOn/');
+        baseRef = ref(db, '/gravityState/');
         set(baseRef, true);
         baseRef = ref(db, '/gameIsOn/');
         set(baseRef, true);        
@@ -419,9 +429,9 @@ export const connectXSlice = createSlice({
       state.stepNumber = 0;
       state.history = history;
       state.currentSign = 'X';      
-      state.turnAction = {number:0, action:0};      
+      state.turnAction = {number:0, type:0};      
       state.transitions = transitions;
-      state.gravIsOn = true;
+      state.gravityState = true;
     },
 
     removePlayers: (state) => {
@@ -449,7 +459,7 @@ export const connectXSlice = createSlice({
           state.stepNumber = data.stepNumber;
           const transitions = data.transitions;
           state.transitions = {slots: transitions.slots, board: transitions.board};
-          state.gravIsOn = data.gravIsOn;
+          state.gravityState = data.gravityState;
           const turnAction = data.turnAction;
           state.turnAction.number = turnAction === actionsPerTurn ? 0 : turnAction;
           state.asyncStatus = state.currentSign === data.currentSign ? 'watching' : '';
@@ -465,19 +475,25 @@ export const connectXSlice = createSlice({
         if (players) {
           const playersRefs = Object.keys(players);
           const playersCount = playersRefs.length; 
-          if(playersCount === 0 || !state.players) {
+          console.log('playersCount',playersCount);
+          if(!playersCount || !state.players) {
+            console.log("setGameStateAsync []");
             state.players = [];
             // window.alert('There was an issue, please try again!');          
-          } else {
+          } 
+
+          if (playersCount) {
             let statePlayers = state.players;
             const statePlayersCount = statePlayers.length;
+            console.log('statePlayersCount',statePlayersCount);
             if (!statePlayersCount || playersCount === 2) {
-              let sign = 'O';
+              const signs = ['O', 'X'];
+
               if (statePlayersCount === 1) statePlayers = [];
-              for (const i in playersRefs) {
-                statePlayers = statePlayers.concat({player: players[playersRefs[i]], sign: sign});
+              for (let i in playersRefs) {
+                statePlayers = statePlayers.concat({player: players[playersRefs[i]], sign: signs[i]});
+                console.log('statePlayers',statePlayers);
                 state.players = statePlayers;
-                sign = 'X';
               }
               state.transitions = {slots:0, board:0};
             }  
@@ -507,7 +523,7 @@ export const selectHistory = (state) => state.connectX.history;
 export const selectGameSettings = (state) => state.connectX.gameSettings;
 export const selectStepNumber = (state) => state.connectX.stepNumber;
 export const selectSortIsAsc = (state) => state.connectX.sortIsAsc;
-export const selectGravityState = (state) => state.connectX.gravIsOn;
+export const selectGravityState = (state) => state.connectX.gravityState;
 export const selectCurrentSign = (state) => state.connectX.currentSign;
 export const selectPlayers = (state) => state.connectX.players;
 export const selectAsyncStatus = (state) => state.connectX.asyncStatus;
@@ -521,16 +537,18 @@ export const playSlot = (slotIndex) => (dispatch, getState) => {
   const history = selectHistory(getState()).slice(0, stepNumber + 1);
   const current = history[stepNumber];    
   const slots = current.slots.slice();
-  const gravIsOn = selectGravityState(getState());
+  const gravityState = selectGravityState(getState());
   // Can't play a slot if it has already been played
   if (slots[slotIndex]) return; 
 
-  const data = {stepNumber, history, current, slots, slotIndex, gravIsOn};
+  const data = {stepNumber, history, current, slots, slotIndex, gravityState};
   dispatch(fillSlot(data));
 
-  if(gravIsOn) {
+  if(gravityState) {
     dispatch(gravity({toggle:false, slotIndex}));
   }
+
+
 };
 
 export const flipBoard = (direction) => (dispatch, getState) => {

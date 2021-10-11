@@ -1,3 +1,24 @@
+import { getDatabase, ref, set } from "firebase/database";
+import '../../../base';
+
+export function updateDb(state) {
+  const db = getDatabase();  
+  let baseRef = ref(db, `/history/${state.stepNumber}`);
+  set(baseRef, state.history);
+  baseRef = ref(db, '/stepNumber/');
+  set(baseRef, state.stepNumber);
+  baseRef = ref(db, '/turnAction/');
+  set(baseRef, state.turnAction.number);
+  baseRef = ref(db, '/currentSign/');
+  set(baseRef, state.currentSign);        
+  baseRef = ref(db, '/gravity/');
+  set(baseRef, state.gravityState);
+  baseRef = ref(db, '/transitions/');
+  set(baseRef, state.transitions);
+  baseRef = ref(db, '/animations/');
+  set(baseRef, state.animations);
+}
+
 // A function that returns an array of indexes corresponding the slots that are part of a winning streak
 // on a two dimensionnal board, whatever the (reasonable) size
 // (previous) and (current) are arrays representing the two dimensionnal board at different steps

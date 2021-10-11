@@ -28,7 +28,7 @@ import {
 import Board from './components/Board';
 import Form from './components/Form';
 import { Switch, Reset } from '../general/helpers/Components';
-import { calculateWinner } from '../general/helpers/Functions';
+import { calculateWinner, updateDb } from '../general/helpers/Functions';
 // CSS
 import styles from './ConnectX.module.css';
 
@@ -37,11 +37,17 @@ export function ConnectX(props) {
 
   const history = useSelector(selectHistory);
   const stepNumber = useSelector(selectStepNumber);
-
-  const currentSlots = history[stepNumber].slots;
+  const gameSettings = useSelector(selectGameSettings);
   const turnAction = useSelector(selectTurnAction);
   const players = useSelector(selectPlayers);
+  const currentSign = useSelector(selectCurrentSign);
+  const gravityState = useSelector(selectGravityState);
+  const transitions = useSelector(selectTransitions);  
+  const animations = useSelector(selectAnimations);
+  const sortIsAsc = useSelector(selectSortIsAsc);
+  const currentSlots = history[stepNumber].slots;
   const playerInfos = props.playerInfos;
+  const pseudo = playerInfos.pseudo;
 
   let gameSettingsForm = <Form sendGameSettings={(i) => dispatch(sendGameSettings(i))} />
   let requestGameButton = <button onClick={() => dispatch(requestGame(playerInfos))}>Request game</button>
@@ -53,20 +59,19 @@ export function ConnectX(props) {
     <span>
       <button onClick={() => dispatch(flipBoard(1))}>Flip right</button>
       <button onClick={() => dispatch(flipBoard(-1))}>Flip left</button>
-      <Switch isOn={!useSelector(selectGravityState)} onClick={() => dispatch(gravity({toggle:true}))}/>
+      <Switch isOn={!gravityState} onClick={() => dispatch(gravity({toggle:true}))}/>
     </span>;
 
   const disabledGameControls =
     <span>
       <button className={styles.disabled} onClick={() => {}}>Flip right</button>
       <button className={styles.disabled} onClick={() => {}}>Flip left</button>
-      <Switch className={styles.disabled} isOn={!useSelector(selectGravityState)} onClick={() => {}}/>
+      <Switch className={styles.disabled} isOn={!gravityState} onClick={() => {}}/>
     </span>;
 
   let playSlotFunc = (i) => dispatch(playSlot(i));
 
   console.log("players",players);
-  const pseudo = playerInfos.pseudo;
   // Use the stamp to differentiate ourselves from an existing player with the same pseudo
   const idStamp = playerInfos.stamp;
   if (players && players.length > 0) {
@@ -92,6 +97,11 @@ export function ConnectX(props) {
         const mySign = myPlayer.sign;
         const isMyTurn = mySign === currentSign ? true : false;
         console.log(isMyTurn);
+        // Writing the DB with the new values if we just used an action 
+        if (turnAction.action) {
+          updateDb({history, stepNumber, turnAction, currentSign, gravityState, transitions, animations});
+        }         
+        
         if (!isMyTurn) {
           dispatch(watchGame(mySign));
           playSlotFunc = () => {};
@@ -119,8 +129,6 @@ export function ConnectX(props) {
     dispatch(initPlayers());
   }
 
-  const currentSign = useSelector(selectCurrentSign);
-  const transitions = useSelector(selectTransitions);  
   console.log("currentSign",currentSign);
   let gameStyle;
   let reverseGameStyle;
@@ -133,7 +141,7 @@ export function ConnectX(props) {
   }
   // We want the player to use one of his two actions to fill a slot
   if (turnAction.number) {
-    const previousAction = turnAction.action;
+    const previousAction = turnAction.type;
     console.log("previousAction",previousAction);
     if (previousAction === 1) {
       playSlotFunc = () => {};
@@ -158,7 +166,6 @@ export function ConnectX(props) {
     };
   }
 
-  const gameSettings = useSelector(selectGameSettings);
   const boardFlip = history[stepNumber].boardFlip;
   const boardParams = {
     width: gameSettings.width,
@@ -193,7 +200,6 @@ export function ConnectX(props) {
     );
   });
 
-  const sortIsAsc = useSelector(selectSortIsAsc);
   // We sort the resulting array in descending order if the toggle is on
   moves = sortIsAsc ? moves : moves.sort((a, b) => b.key - a.key);
 
@@ -213,7 +219,7 @@ export function ConnectX(props) {
     }
   } else if (!winIndexes.length && stepNumber === currentSlots.length) {
     status = 'Draw!'
-  } /*else if (turnAction.action === 1) {
+  } /*else if (turnAction.type === 1) {
     status = 'Next player: ' + player === 'X' ? 'O' : 'X'
   } */else {
     status = 'Next player: ' + currentSign
@@ -231,7 +237,7 @@ export function ConnectX(props) {
         onClick={(i) => playSlotFunc(i)}
         endTurnFunc={endTurnFunc}
         transitions={transitions}
-        animations={useSelector(selectAnimations)}
+        animations={animations}
       />
       <div className={styles.game_info}>
         <div className={styles.status}>{status}</div>
