@@ -1,15 +1,19 @@
 @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@200;300;400;600;700;900&display=swap');
 
 body, form *, button {
-  font: 14px "Cairo", Futura, sans-serif;
+  font: 0.95em "Cairo", Futura, sans-serif;
   /*margin: 0 3vw;*/
 }
 body {
   background-color: #f8f8f8;
 }
 
-form *, button {
+form * {
   line-height: 20px;
+  font-size: 0.95em;
+}
+button {
+  font-size: 1em;
 }
 
 .App {
