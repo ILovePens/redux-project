@@ -24,9 +24,10 @@ button {
 .logo {
   color: #ff8882;
   font-family: 'Cairo', sans-serif;
-  font-size: 22px;
+  font-size: 33px;
   margin: 0;
-  min-width: 165px;
+  /*min-width: 165px;*/
+  min-width: 243px;
   text-align: center;
 }
 
@@ -34,10 +35,10 @@ button {
   content: "";
   display: block;
   width: 92%;
-  height: 17px;
+  height: 25.5px;
   position: relative;
-  margin-top: -17px;
-  top: 24px;
+  margin-top: -25.5px;
+  top: 36px;
   background-color: rgba(255,181,143,0.2);
 }
 
@@ -54,14 +55,16 @@ button {
 
 .App-header {
   min-height: 44px;
-  width: 94vw;
-  height: 10vh;
-  height: calc(var(--vh, 1vh) * 10);
-  margin: 0 auto;  
+  /*width: 94vw;*/
+  height: 8vh;
+  height: calc(var(--vh, 1vh) * 8);
+  /*margin: 0 auto; */
+  padding: 0 3vw;
   display: flex;
   align-items: center;
   justify-content: space-between;
   font-size: calc(10px + 2vmin);
+  box-shadow: 0px 5px 10px 0px rgb(0 0 0 / 10%);  
 }
 
 

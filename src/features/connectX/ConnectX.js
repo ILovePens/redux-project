@@ -254,7 +254,7 @@ export function ConnectX(props) {
         </div>
       {/*Restructure the scroll box so it expands as the moves come in, but make it scrollable so it slides under the main div
          Basically remove the scroll bar entirely, make the bottom of the page a div that translateY onScrollEvent*/}
-        <div className={styles.scrollableY}>
+        <div className={styles.scrollableX}>
           <ol className={styles.moves}>{moves}</ol>
         </div>
       </div>
