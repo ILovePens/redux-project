@@ -2,11 +2,13 @@ import { getDatabase, ref, set } from "firebase/database";
 import '../../../base';
 
 export function updateDb(state) {
-  const db = getDatabase();  
-  let baseRef = ref(db, `/history/${state.stepNumber}`);
-  set(baseRef, state.history);
+  console.log("updateDb");
+  const db = getDatabase();
+  const stepNumber = state.stepNumber;
+  let baseRef = ref(db, `/history/${stepNumber}`);
+  set(baseRef, state.history[stepNumber]);
   baseRef = ref(db, '/stepNumber/');
-  set(baseRef, state.stepNumber);
+  set(baseRef, stepNumber);
   baseRef = ref(db, '/turnAction/');
   set(baseRef, state.turnAction.number);
   baseRef = ref(db, '/currentSign/');

@@ -71,6 +71,8 @@ export function ConnectX(props) {
 
   let playSlotFunc = (i) => dispatch(playSlot(i));
 
+  let gameStatus = history.length === 1 ? 'start' : '';
+  let asyncGameStatus = '';
   console.log("players",players);
   // Use the stamp to differentiate ourselves from an existing player with the same pseudo
   const idStamp = playerInfos.stamp;
@@ -97,11 +99,12 @@ export function ConnectX(props) {
         const mySign = myPlayer.sign;
         const isMyTurn = mySign === currentSign ? true : false;
         console.log(isMyTurn);
+        asyncGameStatus = `You are the ${mySign === 'X' ? 'red' : 'blue'} player. ${isMyTurn ? `Your turn to play!` : `It's your opponent's turn.`}`;
         // Writing the DB with the new values if we just used an action 
         if (turnAction.action) {
           updateDb({history, stepNumber, turnAction, currentSign, gravityState, transitions, animations});
         }         
-        
+
         if (!isMyTurn) {
           dispatch(watchGame(mySign));
           playSlotFunc = () => {};
@@ -227,6 +230,7 @@ export function ConnectX(props) {
   return (
     <div className={styles.game}>
       {gameSettingsForm}
+      {asyncGameStatus}
       <Board
         isMainBoard={true}
         statusClass={gameStyle}

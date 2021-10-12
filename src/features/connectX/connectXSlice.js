@@ -166,7 +166,8 @@ export const connectXSlice = createSlice({
         if (players && players.length === 2) state.turnAction.action = true;        
         isEndTurn = turnAction.number + 1 === actionsPerTurn;
       } else {
-        isEndTurn = turnAction.number === actionsPerTurn
+        isEndTurn = turnAction.number === actionsPerTurn;
+        console.log("isEndTurn",isEndTurn);
       }
 
       const noEditMode = action.payload.noEdit;
@@ -234,7 +235,7 @@ export const connectXSlice = createSlice({
         if (startOfTurn) stepNumber++;
         state.stepNumber = stepNumber;
         if (isEndTurn) {
-          state.turnAction = {number:0, type:0};
+          state.turnAction = {number:0, type:0, action:turnAction.action};
           state.currentSign = state.currentSign === 'X' ? 'O' : 'X';        
         } else {
           state.turnAction.number = isAction ? turnAction.number + 1 : turnAction.number;
