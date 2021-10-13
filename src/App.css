@@ -1,5 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@200;300;400;600;700;900&display=swap');
 
+/* GENERAL APP STYLES*/
 body, form *, button {
   font: 0.95em "Cairo", Futura, sans-serif;
   /*margin: 0 3vw;*/
@@ -14,76 +15,6 @@ form * {
 }
 button {
   font-size: 0.67em;
-}
-
-.App {
-  text-align: center;
-}
-
-
-.logo {
-  color: #ff8882;
-  font-family: 'Cairo', sans-serif;
-  font-size: 33px;
-  margin: 0;
-  /*min-width: 165px;*/
-  min-width: 243px;
-  text-align: center;
-}
-
-.logo:before {
-  content: "";
-  display: block;
-  width: 92%;
-  height: 25.5px;
-  position: relative;
-  margin-top: -25.5px;
-  top: 36px;
-  background-color: rgba(255,181,143,0.2);
-}
-
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-float infinite 3s ease-in-out;
-  }
-}
-
-.App-header {
-  min-height: 44px;
-  /*width: 94vw;*/
-  height: 8vh;
-  height: calc(var(--vh, 1vh) * 8);
-  /*margin: 0 auto; */
-  padding: 0 3vw;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: calc(10px + 2vmin);
-  box-shadow: 0px 5px 10px 0px rgb(0 0 0 / 10%);  
-}
-
-
-.connexionBox .App-header {
-  justify-content: center;
-  margin-top: 30px;  
-}
-.connexionBox .logo {
-  font-size: 44px;
-  min-width: 330px;
-}
-.connexionBox .logo:before {
-  height: 34px;
-  margin-top: -34px;
-  top: 48px;
-}
-
-.App-link {
-  color: rgb(112, 76, 182);
 }
 
 .form {
@@ -122,6 +53,164 @@ button {
     transform: translateX(8px) scale(1.2);
     border-left-color: rgba(117,255,248,.67);  
   }
+
+/* GENERAL LAYOUT STYLES*/
+.App {
+  text-align: center;
+}
+
+.logo {
+  color: #ff8882;
+  font-family: 'Cairo', sans-serif;
+  font-size: 22.8px;
+  margin: 0;
+  min-width: 174px;
+  /*min-width: 243px;*/
+  text-align: center;
+}
+
+.logo:before {
+  content: "";
+  display: block;
+  width: 92%;
+  height: 18px;
+  position: relative;
+  margin-top: -18px;
+  top: 25px;
+  background-color: rgba(255,181,143,0.2);
+}
+
+/*.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-float infinite 3s ease-in-out;
+  }
+}*/
+
+.App-header {
+  min-height: 44px;
+  /*width: 94vw;*/
+  height: 8vh;
+  height: calc(var(--vh, 1vh) * 8);
+  /*margin: 0 auto; */
+  padding: 0 3vw;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: calc(10px + 2vmin);
+  background-color: white;
+  box-shadow: 0px 0.5vh 1vh 0px rgb(0 0 0 / 10%);
+  margin-bottom: 1.5vh;
+}
+  .nav-items {
+    display: flex;
+    height: 34px;
+  }
+
+  .nav-items button {
+    margin-left: 3vw;
+    border: 2px solid #69FFF7;
+    background-color: #69FFF7;
+    color: #fff;
+    line-height: 0px;
+    transition: background-color 0.25s ease;
+  }
+
+  .nav-items button:not([name="i"]) {
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+
+  .nav-items button:not([name="i"]):not(.selected):hover {
+    background-color: #FFF;
+    color: #69FFF7;
+  }
+  .nav-items button.selected {
+    opacity: 0.4;
+  }
+  .nav-items button[name="i"] {
+    position: relative;
+    top: 50%;
+    transform: translateY(-50%);    
+    background-color: #555;
+    width: 21px;
+    height: 21px;
+    /*border: none;*/
+    border-color: #555;
+    border-radius: 50%;
+  }
+    .nav-items button[name="i"]:not(.selected):hover {
+      background-color: #FFF;
+      color: #555;
+    }   
+
+.connexionBox {
+  margin: 30px 13vw 0;
+  text-align: center;
+}
+
+.connexionBox .App-header {
+  justify-content: center;
+  box-shadow: none;  
+}
+.connexionBox .logo {
+  font-size: 44px;
+  min-width: 330px;
+}
+.connexionBox .logo:before {
+  height: 34px;
+  margin-top: -34px;
+  top: 48px;
+}
+.connexion {
+  margin-top: 2em;
+}
+.connexion input/*, .connexion button */{
+  width: 100px;
+}
+
+.infosPage * {
+  margin-bottom: 0;
+}
+.infosPage h2 {
+  color: #ff8882;
+}
+.infosPage h3, .infos h4 {
+  color: #444;
+}
+
+.infos *:not(h2):not(li) {
+  text-align: left;
+  margin-left: 5vw;
+  list-style-type: none;
+}
+.infos * {
+  margin-top: 0;
+}
+  .infos li:before {
+    content: "\25B6";
+    display: inline-block;
+    width: 1em;
+    margin-left: -1em;
+    margin-right: 0.4em;
+    color: #FF75E7; 
+  }
+  .infos h3 {
+    color: #FFBC4F;
+  }  
+
+  .infos *:not(h3) + h4 {
+    margin-top: 15px;
+  }
+
+.App-link {
+  color: rgb(112, 76, 182);
+}
+
 
 footer {
   margin-top: 20px;

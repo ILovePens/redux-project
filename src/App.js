@@ -1,10 +1,12 @@
 import React, { Component } from 'react';
 // import logo from './logo.svg';
 import { Nav } from './features/nav/Nav';
-import { Counter } from './features/counter/Counter';
-import { TicTacToe } from './features/tictactoe/TicTacToe';
+// import { Counter } from './features/counter/Counter';
+// import { TicTacToe } from './features/tictactoe/TicTacToe';
+// import { Tbd } from './features/bejeweled/Tbd';
 import { ConnectX } from './features/connectX/ConnectX';
-import { Tbd } from './features/bejeweled/Tbd';
+import InfosPage from './components/InfosPage';
+
 import { loadSessionItems } from './localStorage';
 import history from './history';
 // CSS
@@ -17,10 +19,11 @@ class App extends Component {
       items: {
         // 'Counter': Counter,
         // 'TicTacToe': TicTacToe,
-        'ConnectX': ConnectX,
-        'Tbd': Tbd
+        // 'Tbd': Tbd
+        'Connect-X': ConnectX,
+        'i': InfosPage,
       },
-      itemSelected: null,
+      itemSelected: 'i',
       playerInfos: null,    
     };
     this.handleClick = this.handleClick.bind(this);    
@@ -53,7 +56,7 @@ class App extends Component {
     const itemSelected = this.state.itemSelected ? React.createElement(this.state.items[this.state.itemSelected], {playerInfos: playerInfos}) : null;    
     return (
       <div className="App">
-        <Nav items={this.state.items} handleClick={this.handleClick}/>
+        <Nav items={this.state.items} itemSelected={this.state.itemSelected} handleClick={this.handleClick}/>
         <div className="main">{itemSelected}</div>
 {/*        <footer>
           <span>

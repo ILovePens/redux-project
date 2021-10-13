@@ -5,9 +5,10 @@ import { Reset } from '../general/helpers/Components';
 
 export function Nav(props) {
   // const dispatch = useDispatch();
+  console.log(props)
   const navItems = Object.keys(props.items)
         .map((key,index) =>
-          <button name={key} key={index} onClick={(i) => props.handleClick(i)}>{key === 'ConnectX' ? `Jouer à ${key}` : key}</button>
+          <button name={key} key={index} className={props.itemSelected === key ? 'selected' : ''} onClick={(i) => props.handleClick(i)}>{key === 'Connect-X' ? `Jouer à ${key}` : key}</button>
         );
   return (
     <header className="App-header">
