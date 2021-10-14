@@ -96,16 +96,20 @@ class Board extends React.Component {
     }
 
     const startAngle = transitions ? this.props.transitions.board : 0;
- 
+    
+    // We include the board flip in the classes to make sure the board classes reload 
+    // when we flip the board. Otherwise, React wouldn't re-assign the values even though the Board was re-rendered,
+    // it's probably a React feature, but i'm not certain of what is happening
     return (
       <div style={{'--boardStartPos': `rotateZ(${startAngle}deg)`}}
           className={`
               ${styles.board} 
               ${isMainBoard ? styles.main_board : ""} 
+              ${isMainBoard ? this.props.flip : ""} 
               ${startAngle === 0 ? "" : `${styles.flip} hasTransition`} 
               ${this.props.isSelected ? styles.selected : ""}
             `}
-          onTransitionEnd={isMainBoard ? () => this.handleTransitionEnd() : undefined} >
+          onTransitionEnd={isMainBoard && isBoardWon ? () => this.handleTransitionEnd() : undefined} >
         {board}
       </div>
     );
