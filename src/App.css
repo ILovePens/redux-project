@@ -100,7 +100,7 @@ form * {
   /*box-shadow: 0px 0.5vh 1vh 0px rgb(0 0 0 / 10%);*/
   box-shadow: 0px calc(var(--vh, 1vh) * 0.5) calc(var(--vh, 1vh)) 0px rgb(0 0 0 / 8%);
   /*margin-bottom: 1.5vh;*/
-  margin-bottom: calc(var(--vh, 1vh) * 1.5);
+  margin-bottom: calc(var(--vh, 1vh) * 1.6);
 }
   .nav-items {
     display: flex;

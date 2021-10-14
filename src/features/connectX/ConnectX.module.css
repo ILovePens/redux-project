@@ -5,8 +5,8 @@
 }
 
 .main {
-  height: 61.5vh;
-  height: calc(var(--vh, 1vh) * 61.5);
+  height: 60vh;
+  height: calc(var(--vh, 1vh) * 60);
 }
 
 .statusHandler, .statusHandler button {
@@ -53,15 +53,6 @@
   background: linear-gradient(0deg, rgb(105 210 255) 0%, rgb(29 230 206) 34%, rgb(105 210 255) 100%);
   /*opacity: 0.85;*/
 }
-
-
-/* !!!!!!!!!!!!!!!!!!!!!!! TODO !!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-- STYLE FOR NEXT PLAYER DISPLAY IN HANDLER
-- LINK HANDLER TO ENDTURN CLICK
-
-!!!!!!!!!!!!!!!!!!!!!!! TODO !!!!!!!!!!!!!!!!!!!!!!!!!!! */
-
 
 .board {
   margin: 0 auto;
