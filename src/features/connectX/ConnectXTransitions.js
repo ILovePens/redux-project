@@ -4,7 +4,6 @@ import styles from './ConnectX.module.css';
 // WIN DISPLAY //
 export function styleWin() {
   const slots = Array.from(document.querySelectorAll('.wonSlot'));
-  console.log(slots);
   slots.forEach(e => {
     e.classList.remove('wonSlot');
     e.classList.add(styles.win);
@@ -15,10 +14,15 @@ export function styleWin() {
 export function animateBoards() {
   // We get all elements with the transition class
   const transitionedElements = Array.from(document.querySelectorAll('.hasTransition'));
+  console.log(transitionedElements);
   transitionedElements.forEach(e => {
     // First we clear out the class on the previously animated elements
-    e.classList.remove('hasTransition');
-    e.classList.remove(styles.transition);
+    // !! A strange behavior prevents us from removing the transition class on the main board but we should
+
+    // e.classList.remove(styles.transitions, 'hasTransition');
+    e.classList.remove(styles.transitions);
+    if (!e.classList.contains(styles.main_board)) e.classList.remove('hasTransition');
+
     // We trust the transitions for animations happening after this update
     setTimeout(() => { e.classList.add(styles.transition); }, 0);
   });

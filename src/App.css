@@ -22,7 +22,8 @@ button {
   justify-content: center;
   min-height: 20px;
   height: 5vh;
-  height: calc(var(--vh, 1vh) * 3.5);  
+  height: calc(var(--vh, 1vh) * 3.5);
+  margin-bottom: calc(var(--vh, 1vh));
 }
   .form * {
     height: 20px;
@@ -31,6 +32,7 @@ button {
   } 
   .form span {
     margin-top: 0;
+    color: #ff8882;
   }
   .form input {
     width: 75px;
@@ -103,8 +105,10 @@ button {
   justify-content: space-between;
   font-size: calc(10px + 2vmin);
   background-color: white;
-  box-shadow: 0px 0.5vh 1vh 0px rgb(0 0 0 / 10%);
-  margin-bottom: 1.5vh;
+  /*box-shadow: 0px 0.5vh 1vh 0px rgb(0 0 0 / 10%);*/
+  box-shadow: 0px calc(var(--vh, 1vh) * 0.5) calc(var(--vh, 1vh)) 0px rgb(0 0 0 / 10%);
+  /*margin-bottom: 1.5vh;*/
+  margin-bottom: calc(var(--vh, 1vh) * 1.5);
 }
   .nav-items {
     display: flex;
@@ -116,8 +120,11 @@ button {
     border: 2px solid #69FFF7;
     background-color: #69FFF7;
     color: #fff;
-    line-height: 0px;
-    transition: background-color 0.25s ease;
+    line-height: 1px;
+    transition: background-color 0.35s ease;
+  }
+  .nav-items button:not(.selected):hover {
+    cursor: pointer;
   }
 
   .nav-items button:not([name="i"]) {
@@ -155,7 +162,8 @@ button {
 
 .connexionBox .App-header {
   justify-content: center;
-  box-shadow: none;  
+  box-shadow: none;
+  background-color: #f8f8f8;  
 }
 .connexionBox .logo {
   font-size: 44px;
@@ -171,7 +179,16 @@ button {
 }
 .connexion input/*, .connexion button */{
   width: 100px;
+  border: 3px solid #69FFF7;  
 }
+  .connexion input:focus {
+    outline: none;
+  }
+
+  .connexion button {
+    border-width: 14px;
+    border-left-width: 23px;
+  }  
 
 .infosPage * {
   margin-bottom: 0;

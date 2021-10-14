@@ -96,17 +96,16 @@ class Board extends React.Component {
     }
 
     const startAngle = transitions ? this.props.transitions.board : 0;
-
+ 
     return (
       <div style={{'--boardStartPos': `rotateZ(${startAngle}deg)`}}
           className={`
-
-              ${startAngle === 0 ? "" : `hasTransition ${styles.flip}`} 
               ${styles.board} 
               ${isMainBoard ? styles.main_board : ""} 
+              ${startAngle === 0 ? "" : `${styles.flip} hasTransition`} 
               ${this.props.isSelected ? styles.selected : ""}
             `}
-          onTransitionEnd={isMainBoard && isBoardWon ? () => this.handleTransitionEnd() : undefined} >
+          onTransitionEnd={isMainBoard ? () => this.handleTransitionEnd() : undefined} >
         {board}
       </div>
     );

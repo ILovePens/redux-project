@@ -8,7 +8,7 @@ export function Nav(props) {
   console.log(props)
   const navItems = Object.keys(props.items)
         .map((key,index) =>
-          <button name={key} key={index} className={props.itemSelected === key ? 'selected' : ''} onClick={(i) => props.handleClick(i)}>{key === 'Connect-X' ? `Jouer à ${key}` : key}</button>
+          <button name={key} key={index} className={props.itemSelected === key ? 'selected' : ''} onClick={props.itemSelected === key ? ()=> {} : (i) => props.handleClick(i)}>{key === 'Connect-X' ? `Jouer à ${key}` : key}</button>
         );
   return (
     <header className="App-header">

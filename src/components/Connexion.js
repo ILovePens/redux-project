@@ -25,6 +25,7 @@ class Connexion extends React.Component {
 						type="text"
 						placeholder="Pseudo"
 						required
+						pattern="[A-Z]*[a-z]*{2,10}"
 						ref={input => {this.pseudoInput = input}}/>
 					<button type="submit"></button>
 				</form>
