@@ -5,12 +5,14 @@ import { Nav } from './features/nav/Nav';
 // import { TicTacToe } from './features/tictactoe/TicTacToe';
 // import { Tbd } from './features/bejeweled/Tbd';
 import { ConnectX } from './features/connectX/ConnectX';
-import InfosPage from './components/InfosPage';
+import InfosPage from './pages/InfosPage';
 
 import { loadSessionItems } from './localStorage';
 import history from './history';
 // CSS
 import './App.css';
+// STYLE
+import { transitionBoards } from './features/connectX/ConnectXTransitions.js';
 
 class App extends Component {
   constructor() {
@@ -27,6 +29,10 @@ class App extends Component {
       playerInfos: null,    
     };
     this.handleClick = this.handleClick.bind(this);    
+  }
+
+  componentDidUpdate() {
+    transitionBoards();
   }
 
   componentDidMount() {
@@ -56,7 +62,7 @@ class App extends Component {
     const itemSelected = this.state.itemSelected ? React.createElement(this.state.items[this.state.itemSelected], {playerInfos: playerInfos}) : null;    
     return (
       <div className="App">
-        <Nav items={this.state.items} itemSelected={this.state.itemSelected} handleClick={this.handleClick}/>
+        <Nav items={this.state.items} itemSelected={this.state.itemSelected} handleClick={this.handleClick} pseudo={playerInfos ? playerInfos.pseudo : ''}/>
         <div className="main">{itemSelected}</div>
 {/*        <footer>
           <span>

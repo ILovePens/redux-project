@@ -6,9 +6,9 @@ import {Router, Route, Switch} from 'react-router-dom';
 import history from './history';
 
 //Components
-import Connexion from './components/Connexion'
+import Connexion from './pages/Connexion'
 import App from './App';
-import NotFound from './components/NotFound'
+import NotFound from './pages/NotFound'
 
 import store from './app/store';
 import { Provider } from 'react-redux';

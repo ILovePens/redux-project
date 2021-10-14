@@ -13,9 +13,7 @@ form * {
   line-height: 20px;
   font-size: 0.95em;
 }
-button {
-  font-size: 0.67em;
-}
+
 
 .form {
   display: flex;
@@ -82,16 +80,10 @@ button {
   background-color: rgba(255,181,143,0.2);
 }
 
-/*.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+.pseudo {
+  line-height: 33px;
+  color: #FF75E7;
 }
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-float infinite 3s ease-in-out;
-  }
-}*/
 
 .App-header {
   min-height: 44px;
@@ -106,21 +98,29 @@ button {
   font-size: calc(10px + 2vmin);
   background-color: white;
   /*box-shadow: 0px 0.5vh 1vh 0px rgb(0 0 0 / 10%);*/
-  box-shadow: 0px calc(var(--vh, 1vh) * 0.5) calc(var(--vh, 1vh)) 0px rgb(0 0 0 / 10%);
+  box-shadow: 0px calc(var(--vh, 1vh) * 0.5) calc(var(--vh, 1vh)) 0px rgb(0 0 0 / 8%);
   /*margin-bottom: 1.5vh;*/
   margin-bottom: calc(var(--vh, 1vh) * 1.5);
 }
   .nav-items {
     display: flex;
-    height: 34px;
+    height: 100%;
+  }
+  .nav-items > * {
+    position: relative;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 33px;
+    font-size: 0.63em;
+    font-weight: 700;    
   }
 
   .nav-items button {
-    margin-left: 3vw;
+    margin-left: 2vw;
     border: 2px solid #69FFF7;
     background-color: #69FFF7;
+    line-height: 1em;
     color: #fff;
-    line-height: 1px;
     transition: background-color 0.35s ease;
   }
   .nav-items button:not(.selected):hover {
@@ -129,32 +129,31 @@ button {
 
   .nav-items button:not([name="i"]) {
     text-transform: uppercase;
-    font-weight: 700;
   }
 
   .nav-items button:not([name="i"]):not(.selected):hover {
     background-color: #FFF;
     color: #69FFF7;
   }
-  .nav-items button.selected {
-    opacity: 0.4;
+  .nav-items button[name].selected {
+    border-color: #f0f0f0;
+    background-color: #f0f0f0;
   }
-  .nav-items button[name="i"] {
-    position: relative;
-    top: 50%;
-    transform: translateY(-50%);    
-    background-color: #555;
+  .nav-items button[name="i"] {  
+    background-color: #8bff6b;
     width: 21px;
     height: 21px;
     /*border: none;*/
-    border-color: #555;
+    border-color: #8bff6b;
     border-radius: 50%;
   }
     .nav-items button[name="i"]:not(.selected):hover {
       background-color: #FFF;
-      color: #555;
-    }   
+      color: #8bff6b;
+    }
 
+
+/* //////// PAGE: CONNEXION //////// */
 .connexionBox {
   margin: 30px 13vw 0;
   text-align: center;
@@ -177,19 +176,12 @@ button {
 .connexion {
   margin-top: 2em;
 }
-.connexion input/*, .connexion button */{
-  width: 100px;
-  border: 3px solid #69FFF7;  
-}
-  .connexion input:focus {
-    outline: none;
+  .connexion input, .connexion input:focus {
+    width: 100px;
+    outline: 3px solid #69FFF7;  
   }
 
-  .connexion button {
-    border-width: 14px;
-    border-left-width: 23px;
-  }  
-
+/* //////// PAGE: INFOS //////// */
 .infosPage * {
   margin-bottom: 0;
 }
@@ -224,25 +216,6 @@ button {
     margin-top: 15px;
   }
 
-.App-link {
-  color: rgb(112, 76, 182);
-}
-
-
-footer {
-  margin-top: 20px;
-}
-@keyframes App-logo-float {
-  0% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(10px);
-  }
-  100% {
-    transform: translateY(0px);
-  }
-}
 
 /* The switch - the box around the slider */
 .switch {
@@ -296,4 +269,28 @@ input:checked + .slider:before {
   -webkit-transform: translateX(26px);
   -ms-transform: translateX(26px);
   transform: translateX(26px);
+}
+
+@media (max-width: 500px) {
+  .logo {
+    font-size: 18.8px;
+    min-width: 142px;
+  }
+  .logo:before {
+    height: 14px;
+    margin-top: -14px;
+    top: 20px;
+  }
+}
+
+@media (max-width: 330px) {
+  .logo {
+    font-size: 11px;
+    min-width: 87px;
+  }
+  .logo:before {
+    height: 10px;
+    margin-top: -10px;
+    top: 12px;
+  }
 }

@@ -2,7 +2,7 @@ import React from 'react';
 import Slot from './Slot';
 
 // STYLE
-import { animateBoards, styleWin } from '../ConnectXTransitions.js';
+import { transitionBoards, styleWin } from '../ConnectXTransitions.js';
 import styles from '../ConnectX.module.css';
 
 class Board extends React.Component {
@@ -12,14 +12,10 @@ class Board extends React.Component {
     // We use this hook to manipulate the transitions on the dom elements 
     const transitions = this.props.transitions;
     if(this.props.isMainBoard) {
-      // If transitions are present, we play them
-      animateBoards();
-      if (!transitions || (!transitions.slots && !transitions.board)) {
-        // If there's none, we directly style the winning slots
-        if(this.props.winIndexes.length) {
-          console.log("hey style win update");
-          styleWin();
-        }
+      transitionBoards();
+      // If there are no transitions and the game is won, we style it directly
+      if ((!transitions || (!transitions.slots && !transitions.board && !transitions.status)) && this.props.winIndexes.length) {
+        styleWin();
       }
     }
   }
@@ -27,10 +23,8 @@ class Board extends React.Component {
   // TRANSITIONS CALLBACK //
   handleTransitionEnd = (event) => {
     // We wait for the end of the transitions to style the winning slots
-    if(this.props.winIndexes.length) {
-          console.log("hey style win transitionend");
-      styleWin();
-    }
+    console.log("hey style win transitionend");
+    styleWin();
   };
 
   // PREPARE THE SLOT //

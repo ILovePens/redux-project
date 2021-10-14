@@ -181,7 +181,7 @@ export function ConnectX(props) {
     const boardWidth = boardFlip % 2 === 0 ? boardParams.width : boardParams.height;
     winIndexes = calculateWinner((history[stepNumber - 1]).slots, currentSlots, scoreTarget, boardWidth);
   }
-  
+
   // We create the move list to be displayed from the history
   let moves = history.map((step, move) => {
     const desc = move ?'Move #' + move : 'Game start';

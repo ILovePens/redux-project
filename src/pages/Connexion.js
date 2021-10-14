@@ -21,9 +21,10 @@ class Connexion extends React.Component {
 			    </header>
 			    <p>Hi! I'm Maxime Sarrazin, and this is Redux-progress, a work in progress of mini-games made with React and Redux, as a part of my learning journey of Javascript and complex application building. Please enter a name below to proceed to the games, as it will be shown to your opponent when playing a versus game online.</p>
 				<form className="form connexion" onSubmit={(i) => this.goToApp(i)}>
+					<span>Enter a pseudo (2 to 10 characters):</span>
 					<input
 						type="text"
-						placeholder="Pseudo"
+						placeholder="pseudo"
 						required
 						pattern="[A-Z]*[a-z]*{2,10}"
 						ref={input => {this.pseudoInput = input}}/>

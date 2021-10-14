@@ -11,10 +11,10 @@ export function styleWin() {
 };
 
 // LAUNCH TRANSITIONS //
-export function animateBoards() {
+export function transitionBoards() {
   // We get all elements with the transition class
   const transitionedElements = Array.from(document.querySelectorAll('.hasTransition'));
-  // console.log(transitionedElements);
+  console.log(transitionedElements);
   transitionedElements.forEach(e => {
     // First we clear out the class on the previously animated elements
     e.classList.remove('hasTransition');

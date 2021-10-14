@@ -266,7 +266,7 @@
 /*////////// GAME TRANSITIONS ////////////*/
 /* Rethink the gravity movement with transform, and use transform(--var(a),--var(b)) to input the correct direction*/
 .transition.fadeInOnHover{
-  transition: 0.25s opacity ease-in 0.25s;  
+  transition: 0.25s opacity ease-in;  
   opacity: 0.4;
 }
   .transition.fadeInOnHover:hover {
