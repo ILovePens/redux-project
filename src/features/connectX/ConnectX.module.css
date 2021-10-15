@@ -46,12 +46,16 @@
   /*background: linear-gradient(0deg, #ffb58f 0%, #ffca8f 34%, #ffb58f 100%);*/
   background: linear-gradient(0deg, hsl(15deg 70% 62%) 0%, hsl(20deg 90% 69%) 34%, hsl(15deg 80% 62%) 100%);
   /*background: linear-gradient(0deg, #ffc518 0%, #fbe73d 34%, #ffc518 100%);*/
-  /*opacity: 0.85;*/
+  background: linear-gradient(90deg, #ff5f6d 0%, #ffc371 100%);
+  opacity: 0.85;
 }
 
 .bluePlayerTurn {
   background: linear-gradient(0deg, rgb(105 210 255) 0%, rgb(29 230 206) 34%, rgb(105 210 255) 100%);
-  /*opacity: 0.85;*/
+
+  background: linear-gradient(90deg, #5b86e5 0%, #36d1dc 100%);  
+  background: linear-gradient(90deg, hsl(221deg 73% 63%) 0%, hsl(176deg 97% 45%) 90%);
+  opacity: 0.9;
 }
 
 .board {
@@ -156,7 +160,7 @@
 
 .moves {
   display: flex;
-  flex-wrap: wrap;
+  /*flex-wrap: wrap;*/
   justify-content: flex-start;
   padding-left: 0;
   list-style-type: none;

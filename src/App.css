@@ -5,6 +5,9 @@ body, form *, button {
   font: 0.95em "Cairo", Futura, sans-serif;
   /*margin: 0 3vw;*/
 }
+button:focus-visible {
+  outline: none;
+}
 body {
   background-color: #f8f8f8;
 }
@@ -35,6 +38,7 @@ form * {
   .form input {
     width: 75px;
     outline: none;
+    border-radius: 1%;
   }
   .form input:focus {
     outline: 1px solid #FFB58F;
@@ -51,7 +55,7 @@ form * {
   .form button:hover {
     cursor: pointer;
     transform: translateX(8px) scale(1.2);
-    border-left-color: rgba(117,255,248,.67);  
+    border-left-color: rgba(117,255,248, 1);  
   }
 
 /* GENERAL LAYOUT STYLES*/
@@ -176,8 +180,11 @@ form * {
 .connexion {
   margin-top: 2em;
 }
-  .connexion input, .connexion input:focus {
+  .connexion input {
     width: 100px;
+  }
+
+  .connexion input, .connexion input:focus {
     outline: 3px solid #69FFF7;  
   }
 
