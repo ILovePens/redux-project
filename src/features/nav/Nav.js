@@ -12,7 +12,7 @@ export function Nav(props) {
             key={index}
             className={itemSelected === key ? 'selected' : ''} 
             onClick={itemSelected === key ? ()=> {} : (i) => props.handleClick(i)}>
-            {key !== 'i' ? `Jouer à ${key}` : key}
+            {key !== 'i' ? `Play ${key}` : key}
           </button>
         );
   return (

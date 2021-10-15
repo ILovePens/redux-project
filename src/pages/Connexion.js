@@ -16,15 +16,16 @@ class Connexion extends React.Component {
 	render() {
 		return (
 			<div className="connexionBox">
-			    <header className="App-header">
-			      <h1 className="logo">Redux-progress</h1>
-			    </header>
-			    <p>Hi! I'm Maxime Sarrazin, and this is Redux-progress, a work in progress of mini-games made with React and Redux, as a part of my learning journey of Javascript and complex application building. Please enter a name below to proceed to the games, as it will be shown to your opponent when playing a versus game online.</p>
+		    <header className="App-header">
+		      <h1 className="logo">Redux-progress</h1>
+		    </header>
+		    <p>Hello there!<br/>
+		    My name is Maxime Sarrazin, and this is Redux-progress, a work in progress of mini-games made with React and Redux, as a part of my learning journey in Javascript and complex application building.</p>
+		    <p>To proceed to the games, please choose your player name below! (2&nbsp;to&nbsp;10 characters)</p>
 				<form className="form connexion" onSubmit={(i) => this.goToApp(i)}>
-					<span>Enter a pseudo (2 to 10 characters):</span>
 					<input
 						type="text"
-						placeholder="pseudo"
+						placeholder="name"
 						required
 						pattern="[A-Z]*[a-z]*{2,10}"
 						ref={input => {this.pseudoInput = input}}/>

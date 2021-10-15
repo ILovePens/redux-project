@@ -9,7 +9,9 @@ button:focus-visible {
   outline: none;
 }
 body {
-  background-color: #f8f8f8;
+  /*background-color: #f8f8f8;*/
+  height: 100vh;
+  height: calc(var(--vh, 1vh) * 100);
 }
 
 form * {
@@ -25,6 +27,7 @@ form * {
   height: 5vh;
   height: calc(var(--vh, 1vh) * 3.5);
   margin-bottom: calc(var(--vh, 1vh));
+  margin-left: 22px;
 }
   .form * {
     height: 20px;
@@ -90,21 +93,20 @@ form * {
 }
 
 .App-header {
-  min-height: 44px;
-  /*width: 94vw;*/
   height: 8vh;
   height: calc(var(--vh, 1vh) * 8);
-  /*margin: 0 auto; */
-  padding: 0 3vw;
+  min-height: 44px;
+  padding: 0 15vw 0 16.5vw;
   display: flex;
   align-items: center;
   justify-content: space-between;
   font-size: calc(10px + 2vmin);
   background-color: white;
-  /*box-shadow: 0px 0.5vh 1vh 0px rgb(0 0 0 / 10%);*/
-  box-shadow: 0px calc(var(--vh, 1vh) * 0.5) calc(var(--vh, 1vh)) 0px rgb(0 0 0 / 8%);
-  /*margin-bottom: 1.5vh;*/
-  margin-bottom: calc(var(--vh, 1vh) * 1.6);
+  margin-bottom: 1.5vh;
+  margin-bottom: calc(var(--vh, 1vh) * 1.5);
+  box-sizing: border-box;
+  border-bottom: 1px solid #ff75e833;
+  box-shadow: 0px calc(var(--vh, 1vh) * 0.5) calc(var(--vh, 1vh)) 0px #ff75e81a;
 }
   .nav-items {
     display: flex;
@@ -135,7 +137,7 @@ form * {
     text-transform: uppercase;
   }
 
-  .nav-items button:not([name="i"]):not(.selected):hover {
+  .nav-items button:not(.selected):hover {
     background-color: #FFF;
     color: #69FFF7;
   }
@@ -143,30 +145,29 @@ form * {
     border-color: #f0f0f0;
     background-color: #f0f0f0;
   }
-  .nav-items button[name="i"] {  
-    background-color: #8bff6b;
+  .nav-items button[name="i"] {
     width: 21px;
     height: 21px;
-    /*border: none;*/
-    border-color: #8bff6b;
     border-radius: 50%;
   }
-    .nav-items button[name="i"]:not(.selected):hover {
-      background-color: #FFF;
-      color: #8bff6b;
-    }
 
 
 /* //////// PAGE: CONNEXION //////// */
 .connexionBox {
-  margin: 30px 13vw 0;
+  margin: 30px auto 0;
   text-align: center;
+  width: 50vw;
+  min-width: calc(280px - 10vw);
+}
+
+.connexionBox p + p {
+  color: #ff8882;
 }
 
 .connexionBox .App-header {
   justify-content: center;
   box-shadow: none;
-  background-color: #f8f8f8;  
+  border: none;
 }
 .connexionBox .logo {
   font-size: 44px;
@@ -178,7 +179,7 @@ form * {
   top: 48px;
 }
 .connexion {
-  margin-top: 2em;
+  margin-top: 1.8em;
 }
   .connexion input {
     width: 100px;
@@ -189,11 +190,18 @@ form * {
   }
 
 /* //////// PAGE: INFOS //////// */
+.infosPage {
+  width: 80vw;
+  max-width: 800px;
+  margin: 0 auto;
+}
 .infosPage * {
   margin-bottom: 0;
 }
 .infosPage h2 {
   color: #ff8882;
+  line-height: 1.5em;
+  margin-bottom: 0.5em;  
 }
 .infosPage h3, .infos h4 {
   color: #444;
@@ -201,7 +209,6 @@ form * {
 
 .infos *:not(h2):not(li) {
   text-align: left;
-  margin-left: 5vw;
   list-style-type: none;
 }
 .infos * {
@@ -278,7 +285,22 @@ input:checked + .slider:before {
   transform: translateX(26px);
 }
 
+@media (max-width: 1140px) {
+  .App-header {
+    padding: 0 3vw 0 4.5vw;
+  }
+}
+
 @media (max-width: 500px) {
+  .connexionBox .logo {
+    font-size: 22.8px;
+    min-width: 174px;
+  }
+  .connexionBox .logo:before {
+    height: 18px;
+    margin-top: -18px;
+    top: 25px;
+  }  
   .logo {
     font-size: 18.8px;
     min-width: 142px;
