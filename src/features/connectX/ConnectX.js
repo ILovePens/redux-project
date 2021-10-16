@@ -152,7 +152,7 @@ export function ConnectX(props) {
       endTurnFunc = () => dispatch(endTurn());
       gameStyle = {
         current: `${gameStyle}`, 
-        previous: `${styles.canEndTurn} ${styles.fadeInOnHover} hasTransition`,
+        previous: `${styles.canEndTurn} ${styles.fadeInOnHover} ${styles.hasTransition}`,
         disabled: true
       };
       // saveSessionItems 
@@ -165,7 +165,7 @@ export function ConnectX(props) {
     console.log(transitions);
     gameStyle = {
       current: gameStyle,
-      previous: history.length > 1 ? `${transitions.status ? `${styles.endTurn} ${reverseGameStyle}`: reverseGameStyle} ${styles.fadeout} hasTransition` : ''
+      previous: history.length > 1 ? `${transitions.status ? `${styles.endTurn} ${reverseGameStyle}`: reverseGameStyle} ${styles.fadeout} ${styles.hasTransition}` : ''
     };
   }
 

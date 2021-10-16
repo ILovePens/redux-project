@@ -9,7 +9,7 @@ function Slot(props) {
 		let transitionClass = "";
 		let speed = 0
 		if (slotScore) {
-			transitionClass = `hasTransition ${styles.fall}`;
+			transitionClass = `${styles.hasTransition} ${styles.fall}`;
 			speed = Math.round((0.16 + 0.189 * Math.log(slotScore)) * 10) / 10;
 		}
 
@@ -21,7 +21,7 @@ function Slot(props) {
     animType = styles[animType];
 
     // DISPLAY WIN //
-    const winClass = props.winStyle ? 'wonSlot' : '';
+    const winClass = props.winStyle ? styles.wonSlot : '';
     let coeff = -1;
   return (
     <button

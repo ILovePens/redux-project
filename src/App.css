@@ -1,71 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@200;300;400;600;700;900&display=swap');
-
-/* GENERAL APP STYLES*/
-body, form *, button {
-  font: 0.95em "Cairo", Futura, sans-serif;
-  /*margin: 0 3vw;*/
-}
-button:focus-visible {
-  outline: none;
-}
-body {
-  /*background-color: #f8f8f8;*/
-  height: 100vh;
-  height: calc(var(--vh, 1vh) * 100);
-}
-
-form * {
-  line-height: 20px;
-  font-size: 0.95em;
-}
-
-
-.form {
-  display: flex;
-  justify-content: center;
-  min-height: 20px;
-  height: 5vh;
-  height: calc(var(--vh, 1vh) * 3.5);
-  margin-bottom: calc(var(--vh, 1vh));
-  margin-left: 22px;
-}
-  .form * {
-    height: 20px;
-    border: none;
-    margin-right: 10px;
-  } 
-  .form span {
-    margin-top: 0;
-    color: #ff8882;
-  }
-  .form input {
-    width: 75px;
-    outline: none;
-    border-radius: 1%;
-  }
-  .form input:focus {
-    outline: 1px solid #FFB58F;
-  }  
-  .form button {
-    width: 0;
-    height: 0;
-    padding: 0;
-    border: 11px solid transparent;
-    border-left: 19px solid #ff8882;
-    background-color: transparent;
-    transition: all .6s ease;
-  }
-  .form button:hover {
-    cursor: pointer;
-    transform: translateX(8px) scale(1.2);
-    border-left-color: rgba(117,255,248, 1);  
-  }
 
 /* GENERAL LAYOUT STYLES*/
-.App {
-  text-align: center;
-}
-
 .logo {
   color: #ff8882;
   font-family: 'Cairo', sans-serif;
@@ -151,43 +85,6 @@ form * {
     border-radius: 50%;
   }
 
-
-/* //////// PAGE: CONNEXION //////// */
-.connexionBox {
-  margin: 30px auto 0;
-  text-align: center;
-  width: 50vw;
-  min-width: calc(280px - 10vw);
-}
-
-.connexionBox p + p {
-  color: #ff8882;
-}
-
-.connexionBox .App-header {
-  justify-content: center;
-  box-shadow: none;
-  border: none;
-}
-.connexionBox .logo {
-  font-size: 44px;
-  min-width: 330px;
-}
-.connexionBox .logo:before {
-  height: 34px;
-  margin-top: -34px;
-  top: 48px;
-}
-.connexion {
-  margin-top: 1.8em;
-}
-  .connexion input {
-    width: 100px;
-  }
-
-  .connexion input, .connexion input:focus {
-    outline: 3px solid #69FFF7;  
-  }
 
 /* //////// PAGE: INFOS //////// */
 .infosPage {
@@ -293,13 +190,13 @@ input:checked + .slider:before {
 
 @media (max-width: 500px) {
   .connexionBox .logo {
-    font-size: 22.8px;
-    min-width: 174px;
+    font-size: 33.8px;
+    min-width: 253px;
   }
   .connexionBox .logo:before {
-    height: 18px;
-    margin-top: -18px;
-    top: 25px;
+    height: 27px;
+    margin-top: -27px;
+    top: 37px;
   }  
   .logo {
     font-size: 18.8px;

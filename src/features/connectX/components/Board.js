@@ -100,7 +100,7 @@ class Board extends React.Component {
               ${styles.board} 
               ${isMainBoard ? styles.main_board : ""} 
               ${isMainBoard ? this.props.flip : ""} 
-              ${startAngle === 0 ? "" : `${styles.flip} hasTransition`} 
+              ${startAngle === 0 ? "" : `${styles.flip} ${styles.hasTransition}`} 
               ${this.props.isSelected ? styles.selected : ""}
             `}
           onTransitionEnd={isMainBoard && isBoardWon ? () => this.handleTransitionEnd() : undefined} >

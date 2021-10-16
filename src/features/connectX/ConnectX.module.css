@@ -267,7 +267,13 @@
   .transition.fadeInOnHover:hover {
     opacity: .8;
   }
-
+  .fadeInOnHover.hasTransition {
+    transition: 0.25s opacity ease-in;  
+    opacity: .4;
+  }  
+  .fadeInOnHover.hasTransition:hover {
+    opacity: .8;
+  }
 /*.transition.saturate {
   opacity: 1;
   transition: 0.25s opacity ease;  
@@ -277,16 +283,25 @@
   transform: translateY(-50%) rotateZ(0deg);
   transition: 0.8s transform ease;  
 }
+  .main_board.flip.hasTransition {
+    transform: translateY(-50%) rotateZ(0deg);
+  }
 
 .transition.flip {
   transform: rotateZ(0deg);
   transition: 0.8s transform ease;  
 }
+  .flip.hasTransition {
+    transform: rotateZ(0deg);
+  }
 
 .transition.fadeout {
   opacity: 0;
   transition: 0.25s opacity ease;  
 }
+  .fadeout.hasTransition {
+    opacity: 0;
+  }
 
 .transition.fall {
   transform: translate(0,0);
@@ -295,6 +310,9 @@
   transition-timing-function: cubic-bezier(.14,0,.27,0);
   /*transition-delay: 1s;*/
 }
+  .fall.hasTransition {
+    transform: translate(0,0);
+  }
 
 /*//////////// MEDIA QUERIES /////////////*/
 @media (max-width: 1140px) {

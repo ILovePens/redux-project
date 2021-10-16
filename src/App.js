@@ -11,8 +11,6 @@ import { loadSessionItems } from './localStorage';
 import history from './history';
 // CSS
 import './App.css';
-// STYLE
-import { transitionBoards } from './features/connectX/ConnectXTransitions.js';
 
 class App extends Component {
   constructor() {
@@ -29,10 +27,6 @@ class App extends Component {
       playerInfos: null,    
     };
     this.handleClick = this.handleClick.bind(this);    
-  }
-
-  componentDidUpdate() {
-    transitionBoards();
   }
 
   componentDidMount() {
