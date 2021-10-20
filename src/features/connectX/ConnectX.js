@@ -71,7 +71,7 @@ export function ConnectX(props) {
 
   let playSlotFunc = (i) => dispatch(playSlot(i));
 
-  let gameStatus = history.length === 1 ? 'start' : '';
+  let gameStatus = history.length === 1 ? 'startOfGame' : 'startOfTurn';
   let asyncGameStatus = '';
   console.log("players",players);
   // Use the stamp to differentiate ourselves from an existing player with the same pseudo
@@ -155,11 +155,13 @@ export function ConnectX(props) {
         previous: `${styles.canEndTurn} ${styles.fadeInOnHover} ${styles.hasTransition}`,
         disabled: true
       };
+      gameStatus = 'canEndTurn';
       // saveSessionItems 
       
     } else {
       gameStyle = {current: `${gameStyle}`, previous: ``};
       gameControls = disabledGameControls;
+      gameStatus = 'hasToPlay';
     }
   } else {
     console.log(transitions);
@@ -175,13 +177,6 @@ export function ConnectX(props) {
     height: gameSettings.height
   }
 
-  let winIndexes = [];
-  const scoreTarget = gameSettings.scoreTarget;
-  if (stepNumber >= (scoreTarget * 2 - 1)) {
-    const boardWidth = boardFlip % 2 === 0 ? boardParams.width : boardParams.height;
-    winIndexes = calculateWinner((history[stepNumber - 1]).slots, currentSlots, scoreTarget, boardWidth);
-  }
-
   // We create the move list to be displayed from the history
   let moves = history.map((step, move) => {
     const desc = move ?'Move #' + move : 'Game start';
@@ -190,6 +185,7 @@ export function ConnectX(props) {
 
     return (
       <li key={move}>
+        <p><span>{desc}</span></p>
         <Board
           boardParams={boardParams}        
           isSelected={isSelected}
@@ -206,9 +202,19 @@ export function ConnectX(props) {
   // We sort the resulting array in descending order if the toggle is on
   moves = sortIsAsc ? moves : moves.sort((a, b) => b.key - a.key);
 
-  // Choose which game status has to be displayed !!!!!!!!!! IMPROVE DISPLAY !!!!!!!!!!!!!!
+
   let status;
+  let winIndexes = [];
+  const scoreTarget = gameSettings.scoreTarget;
+  if (stepNumber >= (scoreTarget * 2 - 1)) {
+    const boardWidth = boardFlip % 2 === 0 ? boardParams.width : boardParams.height;
+    winIndexes = calculateWinner((history[stepNumber - 1]).slots, currentSlots, scoreTarget, boardWidth);
+  }
   if (winIndexes.length) {
+    gameControls = disabledGameControls;
+    endTurnFunc = () => {};
+    playSlotFunc = () => {};
+    gameStatus = 'endOfGame';
     let streakCount = 0;
     winIndexes.forEach(index => {
       if(currentSlots[index] === 'X') streakCount++;
@@ -222,10 +228,11 @@ export function ConnectX(props) {
     }
   } else if (!winIndexes.length && stepNumber === currentSlots.length) {
     status = 'Draw!'
+    gameStatus = 'endOfGame';
   } /*else if (turnAction.type === 1) {
     status = 'Next player: ' + player === 'X' ? 'O' : 'X'
   } */else {
-    status = 'Next player: ' + currentSign
+    status = `${currentSign === 'X' ? 'Red' : 'Blue'} player's turn`
   }
   return (
     <div className={styles.game}>
@@ -243,21 +250,18 @@ export function ConnectX(props) {
         transitions={transitions}
         animations={animations}
       />
-      <div className={styles.game_info}>
-        <div className={styles.status}>{status}</div>
-        <div className={styles.controls}>
-          {requestGameButton}
-          {gameControls}
-          <Switch isOn={!sortIsAsc} onClick={() => dispatch(toggleSort())}/>
-          {endTurnButton}
-          {resetButton}
-        </div>
-      {/*Restructure the scroll box so it expands as the moves come in, but make it scrollable so it slides under the main div
-         Basically remove the scroll bar entirely, make the bottom of the page a div that translateY onScrollEvent*/}
-        <div className={styles.scrollableX}>
-          <ol className={styles.moves}>{moves}</ol>
-        </div>
+      <div className={styles.controls}>
+        {requestGameButton}
+        {gameControls}
+        {endTurnButton}
+        {resetButton}
       </div>
+      <div className={styles.status}><span>{status} - {gameStatus}</span></div>
+      <div className={styles.scrollableX}>
+        <Switch isOn={!sortIsAsc} styles={styles.toggleSort} onClick={() => dispatch(toggleSort())}/>
+        <ol className={styles.moves}>{moves}</ol>
+      </div>
+      
     </div>
   );
 }

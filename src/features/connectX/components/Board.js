@@ -17,6 +17,9 @@ class Board extends React.Component {
       if ((!transitions || (!transitions.slots && !transitions.board && !transitions.status)) && this.props.winIndexes.length) {
         styleWin();
       }
+      // We reset the vh unit to keep the display in check when the viewport height changes (for example on mobile)
+      // We put it here so it's intuitive and hidden to the user
+      document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
     }
   }
 
@@ -118,27 +121,24 @@ class Board extends React.Component {
     // Calculate two sizes for the slot based on the available space on both axes in the viewport
     let slotSize = Math.floor(window.innerHeight * 0.55 / (paramsHeight * size));
     let slotSizeDiff = Math.floor(window.innerHeight * 0.55 / (paramsWidth * size));
-    // let slotSizeDiff = Math.floor(window.innerWidth * 0.8 / (boardParams.width * size));
+    let slotSize2 = Math.floor(window.innerWidth * 0.85 / (paramsHeight * size));
+    let slotSizeDiff2 = Math.floor(window.innerWidth * 0.85 / (paramsWidth * size));
 
     // The final size will be the smallest of the two, as we want the board to fit inside the viewport whatever the
     // flip state of the board
     slotSize = slotSize <= slotSizeDiff ? slotSize : slotSizeDiff;
+    slotSize2 = slotSize2 <= slotSizeDiff2 ? slotSize2 : slotSizeDiff2;
 
-    // let fontSize = Math.round((boardWidth / 15.22) * Math.pow(this.props.boardParams.width, -1) * 10 /*/ size*/) / 10;
-    let fontSize = Math.round((paramsHeight / 130) * 10 /*/ size*/) / 10;
-    if (fontSize <= 0.5) fontSize = 0;
+    slotSize = slotSize <= slotSize2 ? slotSize : slotSize2;
 
     const boardWidth = slotSize * paramsWidth;
     const boardHeight = slotSize * paramsHeight;
-    // let gameHeight = '';
-    // if (size === 1) gameHeight = Math.floor(window.innerHeight * 0.615);
+
     return {
       '--boardWidth': boardWidth + 'px',
       '--boardHeight': boardHeight + 'px',
-      // '--gameHeight': `${gameHeight}px`,
-      // We use margin-right: -1px to merge the borders together on the boards, so we bump the slot size by 1 to compensate
-      '--slotSize': (slotSize + 1) + 'px',
-      '--fontSize': fontSize + 'em'
+      '--slotSize': slotSize + 'px',
+      '--slotContentSize': Math.floor(slotSize * 0.75 - 1) + 'px',
     }
   };
 
@@ -150,15 +150,12 @@ class Board extends React.Component {
     }
     const isMainBoard = this.props.isMainBoard;
 
-    // Display a title under the history moves
-    let title = this.props.title;
     let cssCoeff = 4;
     let boardClass = styles.moves_board;
     let disabledClass = '';
     let isBoardWon = false;   
     let statusHandler = null;
     if (isMainBoard) {
-      title = '';
       cssCoeff = 1;
       boardClass = styles.main;
       if (this.props.statusClass.disabled) disabledClass = styles.disabledBoard;
@@ -179,7 +176,6 @@ class Board extends React.Component {
           className={`${boardClass} ${disabledClass}`}>
         {statusHandler}
         {this.createBoard(boardParams, isMainBoard, isBoardWon)}
-        <p className={styles.title}>{title}</p>
       </div>
     );
   }

@@ -28,19 +28,20 @@ class Form extends React.Component {
 				onSubmit={i => this.prepareInfos(i)}
 				ref={i => this.infosForm = i}
 			>
-				<span>Personnalisez la taille du plateau (entre 3 et 32) :</span>
+				<span>Largeur :</span>
 				<input
 					type="text" pattern="\b([3-9]|[12][0-9]|3[0-2])\b"
 					maxLength={this.props.length}
 					ref={i => this.width = i}
-					placeholder="largeur"
+					placeholder=" 3-32"
 					required
 				/>
+				<span>Hauteur :</span>
 				<input
 					type="text" pattern="\b([3-9]|[12][0-9]|3[0-2])\b"
 					maxLength={this.props.length}
 					ref={i => this.height = i}
-					placeholder="hauteur"
+					placeholder=" 3-32"
 					required
 				/>				
 {/*				<input

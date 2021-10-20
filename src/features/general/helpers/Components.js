@@ -2,7 +2,7 @@ import React from 'react';
 
 export function Switch(props) {
   return (
-    <label className="switch">
+    <label className={`switch ${props.styles}`}>
 		  <input
 			  type="checkbox"
 			  checked={props.isOn}

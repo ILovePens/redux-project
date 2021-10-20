@@ -28,7 +28,7 @@ function Slot(props) {
     	className={`${styles.slot} ${contentClass} ${winClass}`}
     	onClick={props.onClick}
     >
-      <div 	style={{'--slotStartPos': `calc(${coeff * slotScore * 125}% + ${slotScore}px)`,'--speed': `${speed}s`}}
+      <div 	style={{'--slotStartPos': `calc(${coeff * slotScore * 133.3}%)`,'--speed': `${speed}s`}}
 						className={`${transitionClass} ${animType ? animType : ''}`} onTransitionEnd={props.handleTransitionEnd}>
       </div>
     </button>

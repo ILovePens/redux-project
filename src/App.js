@@ -41,9 +41,11 @@ class App extends Component {
         history.push(`/redux-project/login`);
       }
     }
+    document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);    
+  }
 
-    const vh = window.innerHeight * 0.01;
-    document.documentElement.style.setProperty('--vh', `${vh}px`);    
+  componentDidUpdate() {
+    document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);    
   }
 
   handleClick(i) {
