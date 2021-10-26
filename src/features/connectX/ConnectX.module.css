@@ -127,25 +127,38 @@
   box-shadow: 0 0px 0.67em hsl(210deg 100% 27% / 33%);
 }
 
+.gameInfos {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 24px;
+  height: 4.5vh;
+  height: calc(var(--vh, 1vh) * 4.5);
+  margin-bottom: calc(var(--vh, 1vh));  
+}
+
 .controls {
-  height: 5vh;
-  height: calc(var(--vh, 1vh) * 5);
+  height: 5.5vh;
+  height: calc(var(--vh, 1vh) * 5.5);
 }
 
 .status {
-  height: 5vh;
-  height: calc(var(--vh, 1vh) * 5);
+  height: 20px;
+  line-height: 20px;
 }
 
 .moves {
   display: flex;
   justify-content: flex-start;
   list-style-type: none;
+  height: calc(var(--vh, 1vh) * 13.75);
 }
 
 .moves li {
-  margin-left: 4vw;
   position: relative;
+}
+.moves li:not(:first-child) {
+  margin-left: 4vw;
 }
   .moves li p {
     position: absolute;
@@ -203,6 +216,8 @@
 }
 
 .scrollableX {
+  display: flex;
+  align-items: center;  
   overflow-y: hidden;
   overflow-x: scroll;
   height: 20vh;
@@ -211,19 +226,26 @@
 }
 
 label.toggleSort {
-  position: absolute;
   width: 41px;
   height: 24px;  
+  margin-left: 4vw;
 }
 .toggleSort span {
-
+  width: 0;
+  height: 0;
+  padding: 0;
+  border: 11px solid transparent;
+  border-left: 19px solid #fff;
+  background-color: transparent;
+  transition: transform .6s ease;
+  transform-origin: 8px;  
 }
 .toggleSort span:before {
-  height: 16px;
-  width: 16px;
+  content: none;
 }
-.toggleSort input:checked + span:before {
-  transform: translateX(16px);
+.toggleSort input:checked + span {
+  transform: rotateZ(180deg);
+  background-color: transparent;  
 }
 .hidden {
   display: none;

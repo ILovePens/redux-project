@@ -37,8 +37,6 @@ body {
   margin: 0;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  height: 100vh;
-  height: calc(var(--vh, 1vh) * 100);
   text-align: center;
 }
 
@@ -62,10 +60,7 @@ form * {
 .form {
   display: flex;
   justify-content: center;
-  min-height: 20px;
-  height: 5vh;
-  height: calc(var(--vh, 1vh) * 3.5);
-  margin-bottom: calc(var(--vh, 1vh));
+  align-items: center;
   margin-left: 22px;
 }
   .form * {

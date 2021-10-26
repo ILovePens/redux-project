@@ -236,8 +236,11 @@ export function ConnectX(props) {
   }
   return (
     <div className={styles.game}>
-      {gameSettingsForm}
-      {asyncGameStatus}
+      <div className={styles.gameInfos}>
+        <span className={styles.status}>{status} - {gameStatus}</span>
+        {gameSettingsForm}
+        {asyncGameStatus}
+      </div>
       <Board
         isMainBoard={true}
         statusClass={gameStyle}
@@ -256,7 +259,6 @@ export function ConnectX(props) {
         {endTurnButton}
         {resetButton}
       </div>
-      <div className={styles.status}><span>{status} - {gameStatus}</span></div>
       <div className={styles.scrollableX}>
         <Switch isOn={!sortIsAsc} styles={styles.toggleSort} onClick={() => dispatch(toggleSort())}/>
         <ol className={styles.moves}>{moves}</ol>
