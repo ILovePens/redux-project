@@ -141,6 +141,9 @@
   height: 5.5vh;
   height: calc(var(--vh, 1vh) * 5.5);
 }
+  .controls button {
+    cursor: pointer;  
+  }
 
 .status {
   height: 20px;
@@ -246,6 +249,9 @@ label.toggleSort {
 .toggleSort input:checked + span {
   transform: rotateZ(180deg);
   background-color: transparent;  
+}
+.toggleSort input:focus + span {
+  box-shadow: none;
 }
 .hidden {
   display: none;

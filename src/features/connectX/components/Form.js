@@ -28,7 +28,7 @@ class Form extends React.Component {
 				onSubmit={i => this.prepareInfos(i)}
 				ref={i => this.infosForm = i}
 			>
-				<span>Largeur :</span>
+				<span>Largeur&nbsp;:</span>
 				<input
 					type="text" pattern="\b([3-9]|[12][0-9]|3[0-2])\b"
 					maxLength={this.props.length}
@@ -36,7 +36,7 @@ class Form extends React.Component {
 					placeholder=" 3-32"
 					required
 				/>
-				<span>Hauteur :</span>
+				<span>Hauteur&nbsp;:</span>
 				<input
 					type="text" pattern="\b([3-9]|[12][0-9]|3[0-2])\b"
 					maxLength={this.props.length}

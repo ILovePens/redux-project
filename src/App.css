@@ -85,6 +85,9 @@
     border-radius: 50%;
   }
 
+button.disabled, .disabled .slider {
+  cursor: default;  
+}
 
 /* //////// PAGE: INFOS //////// */
 .infosPage {

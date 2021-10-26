@@ -64,9 +64,9 @@ export function ConnectX(props) {
 
   const disabledGameControls =
     <span>
-      <button className={styles.disabled} onClick={() => {}}>Flip right</button>
-      <button className={styles.disabled} onClick={() => {}}>Flip left</button>
-      <Switch className={styles.disabled} isOn={!gravityState} onClick={() => {}}/>
+      <button className="disabled" onClick={() => {}}>Flip right</button>
+      <button className="disabled" onClick={() => {}}>Flip left</button>
+      <Switch styles="disabled" isOn={!gravityState} onClick={() => {}}/>
     </span>;
 
   let playSlotFunc = (i) => dispatch(playSlot(i));
