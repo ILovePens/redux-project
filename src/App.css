@@ -27,8 +27,8 @@
 }
 
 .App-header {
-  height: 8vh;
-  height: calc(var(--vh, 1vh) * 8);
+  height: 7vh;
+  height: calc(var(--vh, 1vh) * 7);
   min-height: 44px;
   padding: 0 15vw 0 16.5vw;
   display: flex;
@@ -59,7 +59,8 @@
     margin-left: 2vw;
     border: 2px solid #69FFF7;
     background-color: #69FFF7;
-    line-height: 1em;
+    border-radius: 5px;
+    line-height: 0.67em;
     color: #fff;
     transition: background-color 0.35s ease;
   }

@@ -76,6 +76,7 @@ form * {
     width: 35px;
     outline: none;
     border-radius: 1%;
+	color: #FF75E7;    
   }
   .form input:focus {
     outline: 1px solid #FFB58F;

@@ -116,6 +116,7 @@ class Board extends React.Component {
   styleBoard = (size, boardParams) => {
     const paramsHeight = boardParams.height; 
     const paramsWidth = boardParams.width; 
+    console.log(window.innerWidth);
     // Align the size of the board to fit the slots  
     // Arbitrary decision to occupy (X%) amount of space in the viewport
     // Calculate two sizes for the slot based on the available space on both axes in the viewport

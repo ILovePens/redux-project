@@ -214,6 +214,7 @@ export function ConnectX(props) {
     gameControls = disabledGameControls;
     endTurnFunc = () => {};
     playSlotFunc = () => {};
+    gameStyle.disabled = true;
     gameStatus = 'endOfGame';
     let streakCount = 0;
     winIndexes.forEach(index => {
@@ -260,7 +261,7 @@ export function ConnectX(props) {
         {resetButton}
       </div>
       <div className={styles.scrollableX}>
-        <Switch isOn={!sortIsAsc} styles={styles.toggleSort} onClick={() => dispatch(toggleSort())}/>
+        <Switch isOn={sortIsAsc} styles={styles.toggleSort} onClick={() => dispatch(toggleSort())}/>
         <ol className={styles.moves}>{moves}</ol>
       </div>
       

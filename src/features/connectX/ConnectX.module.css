@@ -5,8 +5,8 @@
 }
 
 .main {
-  height: 60vh;
-  height: calc(var(--vh, 1vh) * 60);
+  height: 62vh;
+  height: calc(var(--vh, 1vh) * 62);
 }
 
 .statusHandler, .statusHandler button {
@@ -132,10 +132,13 @@
   justify-content: center;
   align-items: center;
   min-height: 24px;
-  height: 4.5vh;
-  height: calc(var(--vh, 1vh) * 4.5);
+  height: 3.5vh;
+  height: calc(var(--vh, 1vh) * 3.5);
   margin-bottom: calc(var(--vh, 1vh));  
 }
+  .gameInfos span {
+ 
+  }
 
 .controls {
   height: 5.5vh;
@@ -159,9 +162,9 @@
 
 .moves li {
   position: relative;
+  margin-left: 1.67em;
 }
 .moves li:not(:first-child) {
-  margin-left: 4vw;
 }
   .moves li p {
     position: absolute;
@@ -229,19 +232,20 @@
 }
 
 label.toggleSort {
-  width: 41px;
-  height: 24px;  
-  margin-left: 4vw;
+  height: 22px;
+  width: 30px;
+  min-width: 30px;
+  margin-left: calc(1.67em - 11px);
 }
 .toggleSort span {
   width: 0;
   height: 0;
   padding: 0;
   border: 11px solid transparent;
-  border-left: 19px solid #fff;
+  border-right: 19px solid #fff;
   background-color: transparent;
   transition: transform .6s ease;
-  transform-origin: 8px;  
+  transform-origin: 23px;  
 }
 .toggleSort span:before {
   content: none;
@@ -255,6 +259,26 @@ label.toggleSort {
 }
 .hidden {
   display: none;
+}
+
+/* width */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: #f1f1f1; 
+}
+ 
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #888; 
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #555; 
 }
 
 /*////////// ANIMATIONS ////////////*/

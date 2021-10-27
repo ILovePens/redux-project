@@ -19,10 +19,10 @@ const initialState = {
   asyncStatus: '',
   currentSign: 'X',
   players: null,
-  sortIsAsc: true,
   gravityState: true,
   transitions: {slots:0, board:0, status:0},
   animations: 0,
+  sortIsAsc: false,
 };
 
 const actionsPerTurn = 2;
