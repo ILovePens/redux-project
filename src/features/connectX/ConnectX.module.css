@@ -47,7 +47,8 @@
   background: linear-gradient(0deg, hsl(15deg 70% 62%) 0%, hsl(20deg 90% 69%) 34%, hsl(15deg 80% 62%) 100%);
   /*background: linear-gradient(0deg, #ffc518 0%, #fbe73d 34%, #ffc518 100%);*/
   background: linear-gradient(90deg, #ff5f6d 19%, #ffc371 85%);
-  opacity: 0.85;
+  background: linear-gradient(90deg, #ff5260 30%, #ffb957 85%);  
+  /*opacity: 0.85;*/
 }
 
 .bluePlayerTurn {
@@ -55,7 +56,8 @@
 
   background: linear-gradient(90deg, #5b86e5 0%, #36d1dc 100%);  
   background: linear-gradient(90deg, #03e2d3 15%, #185a9d 85%);
-  opacity: 0.85;
+  background: linear-gradient(90deg, #b06ab3 30%, #4568dc 85%);  
+  /*opacity: 0.85;*/
 }
 
 .board {
@@ -378,10 +380,10 @@ label.toggleSort {
 /*//////////// MEDIA QUERIES /////////////*/
 @media (max-width: 1140px) {
   .redPlayerTurn {
-    background: linear-gradient(90deg, #ff5f6d 4%, #ffc371 100%);
+    background: linear-gradient(90deg, #ff5260 15%, #ffb957 100%);
   }
 
   .bluePlayerTurn {
-    background: linear-gradient(90deg, hsl(176deg 97% 45%) 0%, #185a9d 100%);
+    background: linear-gradient(90deg, #b06ab3 15%, #4568dc 100%);
   }
 }
