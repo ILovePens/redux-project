@@ -115,13 +115,14 @@ class Board extends React.Component {
   // RETURN THE BOARD'S OWN CSS VARIABLES //
   styleBoard = (size, boardParams) => {
     const paramsHeight = boardParams.height; 
-    const paramsWidth = boardParams.width; 
+    const paramsWidth = boardParams.width;
+    const heightCoeff = this.props.showHistory ? 0.55 : 0.70;
     console.log(window.innerWidth);
     // Align the size of the board to fit the slots  
     // Arbitrary decision to occupy (X%) amount of space in the viewport
     // Calculate two sizes for the slot based on the available space on both axes in the viewport
-    let slotSize = Math.floor(window.innerHeight * 0.55 / (paramsHeight * size));
-    let slotSizeDiff = Math.floor(window.innerHeight * 0.55 / (paramsWidth * size));
+    let slotSize = Math.floor(window.innerHeight * heightCoeff / (paramsHeight * size));
+    let slotSizeDiff = Math.floor(window.innerHeight * heightCoeff / (paramsWidth * size));
     let slotSize2 = Math.floor(window.innerWidth * 0.85 / (paramsHeight * size));
     let slotSizeDiff2 = Math.floor(window.innerWidth * 0.85 / (paramsWidth * size));
 
@@ -158,7 +159,7 @@ class Board extends React.Component {
     let statusHandler = null;
     if (isMainBoard) {
       cssCoeff = 1;
-      boardClass = styles.main;
+      boardClass = `${styles.main} ${this.props.showHistory ? "" : styles.large}`;
       if (this.props.statusClass.disabled) disabledClass = styles.disabledBoard;
       const statusClass = this.props.statusClass;
       // console.log(this.props.onClick);

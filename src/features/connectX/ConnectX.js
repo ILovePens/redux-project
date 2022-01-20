@@ -4,6 +4,7 @@ import {
   playSlot,
   jumpTo,
   toggleSort,
+  toggleHistory,
   gravity,
   flipBoard,
   endTurn,  
@@ -21,7 +22,7 @@ import {
   selectGameSettings,
   selectHistory,
   selectStepNumber,
-  selectSortIsAsc,
+  selectMovesHistory,
   selectTransitions,
   selectAnimations,
 } from './connectXSlice';
@@ -44,7 +45,7 @@ export function ConnectX(props) {
   const gravityState = useSelector(selectGravityState);
   const transitions = useSelector(selectTransitions);  
   const animations = useSelector(selectAnimations);
-  const sortIsAsc = useSelector(selectSortIsAsc);
+  const movesHistory = useSelector(selectMovesHistory);
   const currentSlots = history[stepNumber].slots;
   const playerInfos = props.playerInfos;
   const pseudo = playerInfos.pseudo;
@@ -133,15 +134,13 @@ export function ConnectX(props) {
   }
 
   console.log("currentSign",currentSign);
-  let gameStyle;
-  let reverseGameStyle;
-  if (currentSign ===  'X') {
-    gameStyle = styles.redPlayerTurn
-    reverseGameStyle = styles.bluePlayerTurn
-  } else {
-    gameStyle = styles.bluePlayerTurn
-    reverseGameStyle = styles.redPlayerTurn
+  let statusClass = styles.redPlayerTurn;
+  let reverseStatus = styles.bluePlayerTurn;
+  if (currentSign !==  'X') {
+    statusClass = styles.bluePlayerTurn
+    reverseStatus = styles.redPlayerTurn
   }
+
   // We want the player to use one of his two actions to fill a slot
   if (turnAction.number) {
     const previousAction = turnAction.type;
@@ -150,24 +149,34 @@ export function ConnectX(props) {
       playSlotFunc = () => {};
       endTurnButton = <button onClick={() => dispatch(endTurn())}>End turn</button>
       endTurnFunc = () => dispatch(endTurn());
-      gameStyle = {
-        current: `${gameStyle}`, 
+      statusClass = {
+        current: `${statusClass}`, 
         previous: `${styles.canEndTurn} ${styles.fadeInOnHover} ${styles.hasTransition}`,
         disabled: true
       };
       gameStatus = 'canEndTurn';
-      // saveSessionItems 
       
     } else {
-      gameStyle = {current: `${gameStyle}`, previous: ``};
+      statusClass = {current: `${statusClass}`, previous: ``};
       gameControls = disabledGameControls;
       gameStatus = 'hasToPlay';
     }
   } else {
     console.log(transitions);
-    gameStyle = {
-      current: gameStyle,
-      previous: history.length > 1 ? `${transitions.status ? `${styles.endTurn} ${reverseGameStyle}`: reverseGameStyle} ${styles.fadeout} ${styles.hasTransition}` : ''
+    let transitionStatus;
+    switch (transitions.status) {
+      case 0:
+        transitionStatus = `${reverseStatus} ${styles.fadeout} ${styles.hasTransition}`;
+        break;
+      case 1:
+        transitionStatus = `${styles.endTurn} ${reverseStatus} ${styles.fadeout} ${styles.hasTransition}`;
+        break;
+      case 2:
+        transitionStatus = ``;             
+    }
+    statusClass = {
+      current: statusClass,
+      previous: history.length > 1 ? transitionStatus : ``
     };
   }
 
@@ -177,31 +186,41 @@ export function ConnectX(props) {
     height: gameSettings.height
   }
 
-  // We create the move list to be displayed from the history
-  let moves = history.map((step, move) => {
-    const desc = move ?'Move #' + move : 'Game start';
-    const isSelected = stepNumber === move ? true : false;
-    const isLatestHistoryMove = move === history.length - 1;
+  const showHistory = movesHistory.show;
+  let moves = null;
+  if(showHistory) {
+    // We create the move list to be displayed from the history
+    moves = history.map((step, move) => {
+      const desc = move ?'Move #' + move : 'Game start';
+      const isSelected = stepNumber === move ? true : false;
+      const isLatestHistoryMove = move === history.length - 1;
 
-    return (
-      <li key={move}>
-        <p><span>{desc}</span></p>
-        <Board
-          boardParams={boardParams}        
-          isSelected={isSelected}
-          slots={history[move].slots}
-          transitions={isLatestHistoryMove ? transitions : null}
-          flip={history[move].boardFlip}
-          onClick={() => dispatch(jumpTo(move))}
-          title={desc}
-        />
-      </li>
-    );
-  });
+      return (
+        <li key={move}>
+          <p><span>{desc}</span></p>
+          <Board
+            boardParams={boardParams}        
+            isSelected={isSelected}
+            slots={history[move].slots}
+            transitions={isLatestHistoryMove ? transitions : null}
+            flip={history[move].boardFlip}
+            onClick={() => dispatch(jumpTo(move))}
+            title={desc}
+          />
+        </li>
+      );
+    });
 
-  // We sort the resulting array in descending order if the toggle is on
-  moves = sortIsAsc ? moves : moves.sort((a, b) => b.key - a.key);
+    // We sort the resulting array in descending order if the toggle is on
+    const sortIsAsc = movesHistory.sortIsAsc;
+    moves = sortIsAsc ? moves : moves.sort((a, b) => b.key - a.key);
 
+    moves =
+      <div className={styles.scrollableX}>
+        <Switch isOn={sortIsAsc} styles={styles.toggleSort} onClick={() => dispatch(toggleSort())}/>
+        <ol className={styles.moves}>{moves}</ol>
+      </div>;  
+  }
 
   let status;
   let winIndexes = [];
@@ -214,7 +233,7 @@ export function ConnectX(props) {
     gameControls = disabledGameControls;
     endTurnFunc = () => {};
     playSlotFunc = () => {};
-    gameStyle.disabled = true;
+    statusClass.disabled = true;
     gameStatus = 'endOfGame';
     let streakCount = 0;
     winIndexes.forEach(index => {
@@ -244,7 +263,7 @@ export function ConnectX(props) {
       </div>
       <Board
         isMainBoard={true}
-        statusClass={gameStyle}
+        statusClass={statusClass}
         boardParams={boardParams}
         slots={currentSlots}
         flip={boardFlip}
@@ -253,17 +272,16 @@ export function ConnectX(props) {
         endTurnFunc={endTurnFunc}
         transitions={transitions}
         animations={animations}
+        showHistory={showHistory}
       />
       <div className={styles.controls}>
+        <Switch isOn={showHistory} styles={styles.toggleSort} onClick={() => dispatch(toggleHistory())}/>      
         {requestGameButton}
         {gameControls}
         {endTurnButton}
         {resetButton}
       </div>
-      <div className={styles.scrollableX}>
-        <Switch isOn={sortIsAsc} styles={styles.toggleSort} onClick={() => dispatch(toggleSort())}/>
-        <ol className={styles.moves}>{moves}</ol>
-      </div>
+      {moves}
       
     </div>
   );

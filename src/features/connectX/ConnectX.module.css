@@ -8,6 +8,10 @@
   height: 62vh;
   height: calc(var(--vh, 1vh) * 62);
 }
+.main.large {
+  height: 82vh;
+  height: calc(var(--vh, 1vh) * 82);
+}
 
 .statusHandler, .statusHandler button {
   width: 100%;
@@ -170,6 +174,7 @@
 }
   .moves li p {
     position: absolute;
+    color: #fff;
     left: 100%;
     top: 50%;
     margin: 0;
@@ -181,8 +186,8 @@
     transition: opacity 0.25s ease-in 0.5s;
   }
   .moves li p span {
-    padding: 0.4em;
-    background-color: white;
+    padding: 0 0.4em;
+    background-color: #ff8882;
   }  
   .moves li p:before {
     content: "";
@@ -191,7 +196,7 @@
     height: 0;
     padding: 0;
     border: 9px solid transparent;
-    border-right: 11px solid #ffffff;
+    border-right: 11px solid #ff8882;
     background-color: transparent;
     top: 6px;
     left: -19px; 

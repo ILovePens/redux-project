@@ -14,7 +14,7 @@ const initialState = {
   gameSettings: {
     width: 7,
     height: 6,
-    scoreTarget: 4 
+    scoreTarget: 4
   },
   asyncStatus: '',
   currentSign: 'X',
@@ -22,7 +22,7 @@ const initialState = {
   gravityState: true,
   transitions: {slots:0, board:0, status:0},
   animations: 0,
-  sortIsAsc: false,
+  movesHistory: {show: true, sortIsAsc:false},
 };
 
 const actionsPerTurn = 2;
@@ -103,7 +103,8 @@ export const connectXSlice = createSlice({
           state.animations = animations;
         }
 
-        state.transitions = {slots:0, board:0};          
+        state.transitions.slots = 0;
+        state.transitions.board = 0;
         if (isEndTurn) {
           state.turnAction = {number:0, type:0};
           state.currentSign = slotValue === 'X' ? 'O' : 'X';
@@ -143,7 +144,7 @@ export const connectXSlice = createSlice({
       //   }
       // }
     },
-// Currently unable to toggle
+
     gravity: (state, action) => {
       const slotIndex = action.payload.slotIndex;
       const singleSlotMode = typeof slotIndex === 'undefined' ? false : true;
@@ -249,7 +250,9 @@ export const connectXSlice = createSlice({
         const hasTransitions = transitions && transitions.filter(el => {return el !== 0;}).length > 0 ? true : false;
         // If the toggle was called with a click, we clear the board transition,
         // if the gravity is turned off, we clear the slots transitions
-        state.transitions = {slots: gravityState ? hasTransitions ? transitions : 0 : 0, board: isAction ? 0 : turnAction.type !== 3 ? 0 : state.transitions.board};
+        state.transitions.slots = gravityState ? hasTransitions ? transitions : 0 : 0;
+        state.transitions.board = isAction ? 0 : turnAction.type !== 3 ? 0 : state.transitions.board;        
+        // state.transitions = {slots: gravityState ? hasTransitions ? transitions : 0 : 0, board: isAction ? 0 : turnAction.type !== 3 ? 0 : state.transitions.board};
       }
 
 
@@ -338,7 +341,10 @@ export const connectXSlice = createSlice({
 
       history = history.slice(0, stepNumber);
       state.history = history.concat([{slots: newSlots, boardFlip: boardFlip}]);
-      state.transitions = {slots: 0, board: flipValue * -90};
+
+      state.transitions.slots = 0;
+      state.transitions.board = flipValue * -90;
+      // state.transitions = {slots: 0, board: flipValue * -90};
 
       const players = state.players;
       if (players && players.length === 2) state.turnAction.action = true;
@@ -386,12 +392,17 @@ export const connectXSlice = createSlice({
       state.stepNumber = action.payload;
       state.currentSign = state.stepNumber % 2 === 0 ? 'X' : 'O';      
       state.turnAction = {number:0, type:0};          
-      state.transitions = {slots:0, board:0};
+      state.transitions = {slots:0, board:0, status:2};
     },
 
     toggleSort: (state) => {
-      state.sortIsAsc = state.sortIsAsc ? false : true;
-      state.transitions = {slots:0, board:0};
+      state.movesHistory.sortIsAsc = state.movesHistory.sortIsAsc ? false : true;
+      state.transitions = {slots:0, board:0, status:2};
+    },
+
+    toggleHistory: (state) => {
+      state.movesHistory.show = state.movesHistory.show ? false : true;
+      state.transitions = {slots:0, board:0, status:2};
     },
 
     setGameSettings: (state, action) => {
@@ -410,8 +421,7 @@ export const connectXSlice = createSlice({
     reset: (state, action) => {
       const isDbReset = action.payload;
       const history = state.history.slice(0,1);
-      history[0].boardFlip = 0;
-      const transitions = {slots:0, board:0};        
+      history[0].boardFlip = 0;      
       if (isDbReset) {
         const db = getDatabase();
         let baseRef = ref(db, '/stepNumber/');
@@ -425,7 +435,7 @@ export const connectXSlice = createSlice({
         baseRef = ref(db, '/currentSign/');
         set(baseRef, 'X');      
         baseRef = ref(db, '/transitions/');
-        set(baseRef, transitions);
+        set(baseRef, {slots:0, board:0});
         baseRef = ref(db, '/gravityState/');
         set(baseRef, true);
         baseRef = ref(db, '/gameIsOn/');
@@ -435,7 +445,7 @@ export const connectXSlice = createSlice({
       state.history = history;
       state.currentSign = 'X';      
       state.turnAction = {number:0, type:0};      
-      state.transitions = transitions;
+      state.transitions = {slots:0, board:0, status:0};
       state.gravityState = true;
     },
 
@@ -463,7 +473,9 @@ export const connectXSlice = createSlice({
           state.history = data.history;
           state.stepNumber = data.stepNumber;
           const transitions = data.transitions;
-          state.transitions = {slots: transitions.slots, board: transitions.board};
+          state.transitions.slots = transitions.slots;
+          state.transitions.board = transitions.board;
+          // state.transitions = {slots: transitions.slots, board: transitions.board};
           state.gravityState = data.gravityState;
           const turnAction = data.turnAction;
           state.turnAction.number = turnAction === actionsPerTurn ? 0 : turnAction;
@@ -500,7 +512,7 @@ export const connectXSlice = createSlice({
                 console.log('statePlayers',statePlayers);
                 state.players = statePlayers;
               }
-              state.transitions = {slots:0, board:0};
+              state.transitions = {slots:0, board:0, status:0};
             }  
           }
         }
@@ -512,6 +524,7 @@ export const {
   fillSlot,
   changeStep,
   toggleSort,
+  toggleHistory,
   gravity,
   flipBoardState,
   endTurn,
@@ -527,7 +540,7 @@ export const {
 export const selectHistory = (state) => state.connectX.history;
 export const selectGameSettings = (state) => state.connectX.gameSettings;
 export const selectStepNumber = (state) => state.connectX.stepNumber;
-export const selectSortIsAsc = (state) => state.connectX.sortIsAsc;
+export const selectMovesHistory = (state) => state.connectX.movesHistory;
 export const selectGravityState = (state) => state.connectX.gravityState;
 export const selectCurrentSign = (state) => state.connectX.currentSign;
 export const selectPlayers = (state) => state.connectX.players;
