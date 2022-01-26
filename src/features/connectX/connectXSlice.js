@@ -106,7 +106,8 @@ export const connectXSlice = createSlice({
         state.transitions.slots = 0;
         state.transitions.board = 0;
         if (isEndTurn) {
-          state.turnAction = {number:0, type:0};
+          // state.turnAction = {number:0, type:0};
+          state.turnAction.number = 0;
           state.currentSign = slotValue === 'X' ? 'O' : 'X';
         } else {
           state.turnAction.number += 1;
@@ -236,8 +237,10 @@ export const connectXSlice = createSlice({
         if (startOfTurn) stepNumber++;
         state.stepNumber = stepNumber;
         if (isEndTurn) {
-          state.turnAction = {number:0, type:0, action:turnAction.action};
+          // state.turnAction = {number:0, type:0, action:turnAction.action};
+          state.turnAction = {number:0, type:turnAction.type, action:turnAction.action};     
           state.currentSign = state.currentSign === 'X' ? 'O' : 'X';        
+          state.transitions.status = 1;       
         } else {
           state.turnAction.number = isAction ? turnAction.number + 1 : turnAction.number;
           state.turnAction.type = isAction ? 2 : turnAction.type;
@@ -251,7 +254,7 @@ export const connectXSlice = createSlice({
         // If the toggle was called with a click, we clear the board transition,
         // if the gravity is turned off, we clear the slots transitions
         state.transitions.slots = gravityState ? hasTransitions ? transitions : 0 : 0;
-        state.transitions.board = isAction ? 0 : turnAction.type !== 3 ? 0 : state.transitions.board;        
+        state.transitions.board = isAction ? 0 : turnAction.type !== 3 ? 0 : state.transitions.board;       
         // state.transitions = {slots: gravityState ? hasTransitions ? transitions : 0 : 0, board: isAction ? 0 : turnAction.type !== 3 ? 0 : state.transitions.board};
       }
 
@@ -332,12 +335,14 @@ export const connectXSlice = createSlice({
       const gravIsOff = !state.gravityState;
 
       if (isEndTurn && gravIsOff) {
-        state.turnAction = {number:0, type:0};
-        state.currentSign = state.currentSign === 'X' ? 'O' : 'X';        
+        // state.turnAction = {number:0, type:0};
+        state.turnAction.number = 0;
+        state.currentSign = state.currentSign === 'X' ? 'O' : 'X';
+        state.transitions.status = 1;          
       } else {
         state.turnAction.number += 1;
-        state.turnAction.type = 3;
       }
+      state.turnAction.type = 3;
 
       history = history.slice(0, stepNumber);
       state.history = history.concat([{slots: newSlots, boardFlip: boardFlip}]);
@@ -373,7 +378,7 @@ export const connectXSlice = createSlice({
 
     endTurn: (state) => {
       // const turnAction = {number:0, type:0, action:true};
-      state.turnAction = {number:0, type:0, action:true};
+      state.turnAction = {number:0, type:4, action:true};
       state.currentSign = state.currentSign === 'X' ? 'O' : 'X';
       state.transitions = {slots:0, board:0, status:1};
       // if (state.players && state.players.length === 2) {
@@ -392,17 +397,17 @@ export const connectXSlice = createSlice({
       state.stepNumber = action.payload;
       state.currentSign = state.stepNumber % 2 === 0 ? 'X' : 'O';      
       state.turnAction = {number:0, type:0};          
-      state.transitions = {slots:0, board:0, status:2};
+      state.transitions = {slots:0, board:0, status:0};
     },
 
     toggleSort: (state) => {
       state.movesHistory.sortIsAsc = state.movesHistory.sortIsAsc ? false : true;
-      state.transitions = {slots:0, board:0, status:2};
+      state.transitions = {slots:0, board:0, status:0};
     },
 
     toggleHistory: (state) => {
       state.movesHistory.show = state.movesHistory.show ? false : true;
-      state.transitions = {slots:0, board:0, status:2};
+      state.transitions = {slots:0, board:0, status:0};
     },
 
     setGameSettings: (state, action) => {

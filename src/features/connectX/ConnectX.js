@@ -142,9 +142,9 @@ export function ConnectX(props) {
   }
 
   // We want the player to use one of his two actions to fill a slot
+  const previousAction = turnAction.type;
+  console.log("previousAction",previousAction);
   if (turnAction.number) {
-    const previousAction = turnAction.type;
-    console.log("previousAction",previousAction);
     if (previousAction === 1) {
       playSlotFunc = () => {};
       endTurnButton = <button onClick={() => dispatch(endTurn())}>End turn</button>
@@ -164,19 +164,21 @@ export function ConnectX(props) {
   } else {
     console.log(transitions);
     let transitionStatus;
-    switch (transitions.status) {
-      case 0:
+    if (transitions.status === 1) {
+      if (previousAction !== 1) {
+        if (previousAction !== 4 ) {
+          transitionStatus = `${styles.endedTurn} ${reverseStatus} ${styles.fadeout} ${styles.hasTransition}`;
+        } else {
+          transitionStatus = `${styles.endedTurnEarly} ${reverseStatus} ${styles.fadeout} ${styles.hasTransition}`;
+        }
+      } else {
         transitionStatus = `${reverseStatus} ${styles.fadeout} ${styles.hasTransition}`;
-        break;
-      case 1:
-        transitionStatus = `${styles.endTurn} ${reverseStatus} ${styles.fadeout} ${styles.hasTransition}`;
-        break;
-      case 2:
-        transitionStatus = ``;             
+      }
     }
+
     statusClass = {
       current: statusClass,
-      previous: history.length > 1 ? transitionStatus : ``
+      previous: history.length > 1 ? transitionStatus : `test`
     };
   }
 
@@ -217,7 +219,7 @@ export function ConnectX(props) {
 
     moves =
       <div className={styles.scrollableX}>
-        <Switch isOn={sortIsAsc} styles={styles.toggleSort} onClick={() => dispatch(toggleSort())}/>
+        <Switch isOn={sortIsAsc} styles={styles.toggleArrow} onClick={() => dispatch(toggleSort())}/>
         <ol className={styles.moves}>{moves}</ol>
       </div>;  
   }
@@ -275,7 +277,7 @@ export function ConnectX(props) {
         showHistory={showHistory}
       />
       <div className={styles.controls}>
-        <Switch isOn={showHistory} styles={styles.toggleSort} onClick={() => dispatch(toggleHistory())}/>      
+        <Switch isOn={showHistory} styles={styles.toggleArrow} onClick={() => dispatch(toggleHistory())}/>      
         {requestGameButton}
         {gameControls}
         {endTurnButton}
